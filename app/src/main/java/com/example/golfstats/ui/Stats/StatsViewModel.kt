@@ -69,13 +69,26 @@ class StatsViewModel(val shotsRepo: ShotsRepo) : ViewModel() {
                     for (baton in _state.value.uniqueshotsname) {
                         Log.d("EEEEE", "GETSTATSUCCESS INSIDE WITH ${baton}")
                         Log.d("EEEEE", "GETSTATSUCCESS INSIDE WITH LIST : ${tmp_list}")
-                        var flow_test =  shotsRepo.getSuccess(event.session_id, baton)
-                        Log.d("EEEEE", flow_test.toString())
-                        //shotsRepo.getSuccess(event.session_id, baton).collect { i ->
-                        //    tmp_list.add(i)
-                        //}
+                        var flow_stat = shotsRepo.getSuccess(event.session_id, baton)
+                        /*try {
+                            flow_stat.collect { i ->
+                                tmp_list.add(i)
+                            }
+                            Log.d("EEEEE", "fin try")
+                        } catch (error: Throwable) {
+                            Log.d("EEEEE", "ERREUR : ${error.toString()}")
+                        }*/
+
+                        flow_stat.collect { i ->
+                            tmp_list.add(i)
+                        }
+                        Log.d("EEEEE", "fin try")
+
                     }
                     Log.d("EEEEE", "après la loop ")
+                    tmp_list.add(3)
+                    tmp_list.add(7)
+                    tmp_list.add(999)
                     _state.update {
                         it.copy(
                             success = tmp_list.toList()

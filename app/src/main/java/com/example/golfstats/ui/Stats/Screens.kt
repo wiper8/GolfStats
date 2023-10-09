@@ -30,10 +30,8 @@ fun StatsScreen(session_id: Int, navController: NavHostController) {
 
     onEvent(StatEvent.SetSessionId(session_id))
     onEvent(StatEvent.GetUniqueShotName(session_id))
-    Log.d("EEEEE", "A")
     onEvent(StatEvent.GetStatSuccess(session_id))
-    Log.d("EEEEE", "success" + state.value.success.toString())
-    Log.d("EEEEE", "B")
+    Log.d("EEEEE", "after event, success" + state.value.success.toString())
     onEvent(StatEvent.GetStatSuccessTry(session_id))
     //onEvent(StatEvent.GetStatPutt(session_id))
 
@@ -72,7 +70,7 @@ fun StatItem(shot: String, success: Int, successTry: Int, green: Int, greenTry: 
              penalty: Int, penaltyTry: Int, reset: Int, resetTry: Int) {
     Row {
         Text(shot)
-        Text("${success.toString()} / ${successTry.toString()}")
+        Text(" ${success.toString()} / ${successTry.toString()}")
 
     }
 }
