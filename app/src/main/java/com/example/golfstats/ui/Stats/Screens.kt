@@ -28,68 +28,72 @@ fun StatsScreen(session_id: Int, navController: NavHostController) {
     val state = viewModel.state.collectAsState()
     val onEvent = viewModel::onEvent
 
+    onEvent(StatEvent.Creation)
     onEvent(StatEvent.SetSessionId(session_id))
-    onEvent(StatEvent.GetUniqueShotName(session_id))
-    onEvent(StatEvent.GetStatSuccess(session_id))
-    Log.d("EEEEE", "after event, success" + state.value.success.toString())
-    onEvent(StatEvent.GetStatSuccessTry(session_id))
-    //onEvent(StatEvent.GetStatPutt(session_id))
+    onEvent(StatEvent.GetStats)
 
-    Column {
-        Row {
-            Text("Shot")
-            Text("Success")
-            Text("Green")
-            Text("Penalty")
-            Text("Reset")
-        }
-        LazyColumn() {
-            itemsIndexed(state.value.uniqueshotsname) {index, item ->
-                Log.d("EEEEE", "inside lazy with item " + index.toString())
-                Log.d("EEEEE", state.value.uniqueshotsname.toString())
-                Log.d("EEEEE", state.value.success.toString())
-                StatItem(state.value.uniqueshotsname[index],
-                    state.value.success[index], 0,
-                    0,0,0,0,0,0)
-                    //state.value.green[index], state.value.greenTry[index],
-                    //state.value.penalty[index], state.value.penaltyTry[index],
-                    //state.value.reset[index], state.value.resetTry[index])
+    Row {
+        Column {
+            Text("Shot"+" ".repeat(maxOf(state.value.longest_shot_name-4, 0)))
+            LazyColumn() {
+                itemsIndexed(state.value.uniqueshotsname) {index, item ->
+                    if(item != "Putt") {
+                        Text(state.value.uniqueshotsname[index] +
+                                " ".repeat(maxOf(state.value.longest_shot_name-3, 1)))
+                    }
+                }
             }
         }
-        PuttStat(one = 0, two = 0, three = 0, four = 0, five = 0)
-        Button(onClick = {
-            navController.popBackStack(route = Screens.Stats.name, inclusive = false)
-        }) {
-            Icon(Icons.Default.ArrowBack, "return")
+
+        Column {
+            Row {
+                Text(" Success ")
+                Text("Green  ")
+                Text("Penalty ")
+                Text("Reset")
+            }
+
+            LazyColumn() {
+                itemsIndexed(state.value.uniqueshotsname) {index, item ->
+                    if(item != "Putt") {
+                        StatItem(state.value.uniqueshotsname[index],
+                            state.value.success[index], state.value.successTry[index],
+                            state.value.green[index], state.value.greenTry[index],
+                            state.value.penalty[index], state.value.penaltyTry[index],
+                            state.value.reset[index], state.value.resetTry[index], state.value.longest_shot_name)
+                    }
+                }
+            }
+            PuttStat(one = state.value.putts[0], two = state.value.putts[1], three = state.value.putts[2],
+                four = state.value.putts[3], five = state.value.putts[4])
+            Button(onClick = {
+                navController.popBackStack(route = Screens.Sessions.name, inclusive = false)
+            }) {
+                Icon(Icons.Default.ArrowBack, "return")
+            }
         }
     }
 }
 
 @Composable
 fun StatItem(shot: String, success: Int, successTry: Int, green: Int, greenTry: Int,
-             penalty: Int, penaltyTry: Int, reset: Int, resetTry: Int) {
-    Row {
-        Text(shot)
-        Text(" ${success.toString()} / ${successTry.toString()}")
-
-    }
+             penalty: Int, penaltyTry: Int, reset: Int, resetTry: Int, longest: Int) {
+    Text("    ${success.toString()} / ${successTry.toString()}     ${green.toString()} / " +
+            "${greenTry.toString()}   ${penalty.toString()} / ${penaltyTry.toString()}    ${reset.toString()} / ${resetTry.toString()}")
 }
 
 @Composable
 fun PuttStat(one: Int, two: Int, three: Int, four: Int, five: Int) {
     Column {
-        Row {
-            Text("1")
-            Text("2")
-            Text("3")
-            Text("4")
-            Text("5")
+        Row{
+            Text("Putt")
         }
+        Text("1 2 3 4 5")
         Row {
-            Text("${one.toString()}")
-            Text("${two.toString()}")
-            Text("${three.toString()}")
-            Text("${four.toString()}")
+            Text("${one.toString()} ")
+            Text("${two.toString()} ")
+            Text("${three.toString()} ")
+            Text("${four.toString()} ")
             Text("${five.toString()}")
         }
     }

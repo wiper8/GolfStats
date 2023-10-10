@@ -42,7 +42,7 @@ object AppViewModelProvider {
                 golfstatsApplication().container.shotsavailableRepo)
         }
         initializer {
-            StatsViewModel(golfstatsApplication().container.shotsRepo)
+            StatsViewModel(golfstatsApplication().container.shotsRepo, golfstatsApplication().container.shotsavailableRepo)
         }
         /*initializer {
             CourseViewModel(golfstatsApplication().container.courseRepo)

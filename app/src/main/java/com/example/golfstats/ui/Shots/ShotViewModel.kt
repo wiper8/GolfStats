@@ -12,6 +12,7 @@ import com.example.golfstats.data.ShotsAvailable.ShotsAvailableRepo
 import com.example.golfstats.data.Shots.ShotsRepo
 import com.example.golfstats.data.ShotsAvailable.ShotsAvailableRow
 import com.example.golfstats.ui.Sessions.SessionEvent
+import com.example.golfstats.ui.Stats.StatEvent
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -28,7 +29,7 @@ class ShotViewModel(val shotsRepo: ShotsRepo, val shotavailableRepo: ShotsAvaila
 
     val state = combine(
         _state,
-        shotsRepo.getShots(),
+        shotsRepo.getSessionShots(0),
         shotavailableRepo.getShots(),
     ) { state, shotList, shotavailableList ->
         state.copy(
@@ -278,7 +279,6 @@ class ShotViewModel(val shotsRepo: ShotsRepo, val shotavailableRepo: ShotsAvaila
                     )
                 }
             }
-
             is ShotEvent.OnChooseShot -> {
                 newShot = newShot.copy(
                     shot = event.shot
@@ -309,6 +309,22 @@ class ShotViewModel(val shotsRepo: ShotsRepo, val shotavailableRepo: ShotsAvaila
                     it.copy(
                         session_id = event.session_id
                     )
+                }
+            }
+            ShotEvent.GetShots -> {
+                viewModelScope.launch {
+                    Log.d("EEEEE", "sessionid for collect : ${_state.value.session_id}")
+
+                    shotsRepo.getSessionShots(_state.value.session_id).collect { l ->
+                        Log.d("EEEEE", "list collected  : ${l}")
+
+                        _state.update {
+                            it.copy(
+                                recentShotsList = l
+                            )
+                        }
+                        Log.d("EEEEE", "list in _state : ${_state.value.recentShotsList}")
+                    }
                 }
             }
             is ShotEvent.OnChangedsucess -> {

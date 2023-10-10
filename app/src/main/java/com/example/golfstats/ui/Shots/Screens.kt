@@ -54,7 +54,9 @@ fun ShotSessionScreen(
     val onEvent = viewModel::onEvent
 
     onEvent(ShotEvent.SetSessionId(session_id))
+    onEvent(ShotEvent.GetShots)
 
+    Log.d("EEEEE", "in screen, list is : ${state.value.recentShotsList}")
     if(state.value.is_add_shot_screen_open) {
         Column {
             Row {
@@ -80,12 +82,13 @@ fun ShotSessionScreen(
             }
             Row {
                 Button(onClick = {
-                    navController.popBackStack(route = Screens.Menu.name, inclusive = false)
+                    navController.popBackStack(route = Screens.Sessions.name, inclusive = false)
                     onEvent(ShotEvent.DismissShot)
                 }) {
                     Icon(Icons.Default.Done, "Finish")
                 }
             }
+            Text("session id : ${state.value.session_id}")
             RecentShots(
                 state.value.recentShotsList, onEvent
             )
