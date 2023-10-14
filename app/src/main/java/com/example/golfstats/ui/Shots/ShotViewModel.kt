@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 
 class ShotViewModel(val shotsRepo: ShotsRepo, val shotavailableRepo: ShotsAvailableRepo) : ViewModel() {
@@ -29,7 +30,7 @@ class ShotViewModel(val shotsRepo: ShotsRepo, val shotavailableRepo: ShotsAvaila
 
     val state = combine(
         _state,
-        shotsRepo.getSessionShots(0),
+        shotsRepo.getShots(),
         shotavailableRepo.getShots(),
     ) { state, shotList, shotavailableList ->
         state.copy(
@@ -305,25 +306,14 @@ class ShotViewModel(val shotsRepo: ShotsRepo, val shotavailableRepo: ShotsAvaila
                 }
             }
             is ShotEvent.SetSessionId -> {
-                _state.update {
-                    it.copy(
-                        session_id = event.session_id
-                    )
-                }
-            }
-            ShotEvent.GetShots -> {
                 viewModelScope.launch {
-                    Log.d("EEEEE", "sessionid for collect : ${_state.value.session_id}")
-
-                    shotsRepo.getSessionShots(_state.value.session_id).collect { l ->
-                        Log.d("EEEEE", "list collected  : ${l}")
-
+                    shotsRepo.getSessionShots(event.session_id).collect { l ->
                         _state.update {
                             it.copy(
+                                session_id = event.session_id,
                                 recentShotsList = l
                             )
                         }
-                        Log.d("EEEEE", "list in _state : ${_state.value.recentShotsList}")
                     }
                 }
             }

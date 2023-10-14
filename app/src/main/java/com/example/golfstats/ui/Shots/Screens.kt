@@ -1,9 +1,16 @@
 package com.example.golfstats.ui.Shots
 
 import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -26,80 +33,65 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.golfstats.Screens
 import com.example.golfstats.data.Shots.ShotRow
 import com.example.golfstats.data.ShotsAvailable.ShotsAvailableRow
-import com.example.golfstats.ui.AppViewModelProvider
-import com.example.golfstats.ui.Sessions.SessionEvent
 import com.example.golfstats.ui.check_int
 import com.example.golfstats.ui.check_string_to_int
 
 
 @Composable
 fun ShotSessionScreen(
-    session_id: Int,
+    state: State<ShotState>,
+    newShotAvailable: ShotsAvailableRow,
+    error_gen: Boolean,
+    onEvent: (ShotEvent) -> Unit,
     navController: NavHostController
 ) {
-    val viewModel: ShotViewModel = viewModel(factory = AppViewModelProvider.Factory)
-    val state = viewModel.state.collectAsState()
-    val onEvent = viewModel::onEvent
 
-    onEvent(ShotEvent.SetSessionId(session_id))
-    onEvent(ShotEvent.GetShots)
-
-    Log.d("EEEEE", "in screen, list is : ${state.value.recentShotsList}")
     if(state.value.is_add_shot_screen_open) {
-        Column {
-            Row {
-                Button(onClick = {
-                    onEvent(ShotEvent.onAddShot)
-                }) {
-                    Icon(Icons.Default.Add, "Add Shot")
-                }
+
+        Column(
+            Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center) {
                 Button(
                     onClick = {
-                        //TODO
-                    }
+                        onEvent(ShotEvent.onAddShot)
+                    },
+                    Modifier.width(120.dp)
                 ) {
-                    Row {
-                        //Image(imageVector = Icons.Default.Add, contentDescription = "multiple add",
-                            //modifier = Modifier.clickable {
-                                //isClicked = !isClicked
-                                ////onClick()
-                            //})
-                        Text("Multiple Shots")
-                    }
+                    Icon(Icons.Default.Add, "Add Shot")
                 }
-            }
-            Row {
-                Button(onClick = {
-                    navController.popBackStack(route = Screens.Sessions.name, inclusive = false)
-                    onEvent(ShotEvent.DismissShot)
-                }) {
+                Spacer(modifier = Modifier.width(30.dp))
+                Button(
+                    onClick = {
+                        navController.popBackStack(route = Screens.Sessions.name, inclusive = false)
+                        onEvent(ShotEvent.DismissShot)
+                    },
+                    Modifier.width(120.dp)
+                ) {
                     Icon(Icons.Default.Done, "Finish")
                 }
             }
-            Text("session id : ${state.value.session_id}")
-            RecentShots(
-                state.value.recentShotsList, onEvent
-            )
+            Spacer(modifier = Modifier.height(20.dp))
+            RecentShots(state, onEvent)
         }
+        
     }
     if(state.value.is_choix_club_open) {
-        ChoixBatonScreen(state, viewModel::onEvent,
-            viewModel.newShotAvailable, viewModel.error_gen)
+        ChoixBatonScreen(state, onEvent, newShotAvailable, error_gen)
     }
     if(state.value.is_putt_open) {
-        PuttScreen(viewModel::onEvent)
+        PuttScreen(onEvent)
     }
     CheckScreen(state = state, onEvent)
 }
@@ -107,12 +99,13 @@ fun ShotSessionScreen(
 
 
 @Composable
-fun RecentShots(
-    shotsList: List<ShotRow>, onEvent: (ShotEvent) -> Unit, modifier: Modifier = Modifier
+fun RecentShots(state: State<ShotState>, onEvent: (ShotEvent) -> Unit, modifier: Modifier = Modifier
 ) {
     LazyColumn(modifier = modifier) {
-        items(items = shotsList, key = {it.id}) {item ->
-            ShotsItem(shot_row = item, onEvent = onEvent)
+        items(items = state.value.recentShotsList, key = {it.id}) {item ->
+            if(item.session_id == state.value.session_id) {
+                ShotsItem(shot_row = item, onEvent = onEvent)
+            }
         }
     }
 }
@@ -122,28 +115,33 @@ fun RecentShots(
 private fun ShotsItem(
     shot_row: ShotRow, onEvent: (ShotEvent) -> Unit, modifier: Modifier = Modifier
 ) {
-    Column {
+    if(shot_row.is_putt) {
+        Row {
+            Text(" " + shot_row.success.toString() + " putt")
+            Button(onClick = {
+                onEvent(ShotEvent.DeleteRecordedShot(shot_row))
+            }) {
+                Icon(Icons.Default.Delete, contentDescription = "Delete")
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+    } else {
         Row {
             Text(text = shot_row.shot)
-            Spacer(Modifier.weight(1f))
-            Text(text = "success : " + shot_row.success.toString())
-            Spacer(Modifier.weight(1f))
-            Text(text = "green : " + shot_row.green.toString())
+            Column {
+                Text(text = " success : " + shot_row.success.toString() + " green : " + shot_row.green.toString())
+                Text(text = " penalty : " + shot_row.penalty.toString() + " reset : " + shot_row.reset.toString())
+            }
+            Button(onClick = {
+                onEvent(ShotEvent.DeleteRecordedShot(shot_row))
+            }) {
+                Icon(Icons.Default.Delete, contentDescription = "Delete")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
         }
+
     }
-    Row {
-        Text(text = "penalty : " + shot_row.penalty.toString())
-        Spacer(Modifier.weight(1f))
-        Text(text = "reset : " + shot_row.reset.toString())
-        Spacer(Modifier.weight(1f))
-        Text(text = "is_putt : " + shot_row.is_putt.toString())
-        Spacer(Modifier.weight(1f))
-        Button(onClick = {
-            onEvent(ShotEvent.DeleteRecordedShot(shot_row))
-        }) {
-            Icon(Icons.Default.Delete, contentDescription = "Delete")
-        }
-    }
+
 }
 
 
@@ -152,14 +150,17 @@ fun ChoixBatonScreen(state: State<ShotState>, onEvent: (ShotEvent) -> Unit,
                      newShotAvailable: ShotsAvailableRow, error_gen: Boolean) {
     if(!state.value.is_edit_choix_club_open) {
         Column {
-            Text("Choix baton")
+            Text("Choix baton", fontSize=20.sp)
             if(state.value.is_delete_option) {
-                LazyVerticalGrid(columns = GridCells.Fixed(3)) {
+                LazyVerticalGrid(columns = GridCells.Fixed(3),
+                    contentPadding = PaddingValues(12.dp)
+                    ) {
                     items(items = state.value.shotavailableList, key = {it.shot}) {item ->
                         Button(onClick = {
                             onEvent(ShotEvent.onEditExistingShotAvailable(item))
-                        }) {
-                            Text(item.shot)
+                        },
+                            Modifier.height(80.dp)) {
+                            Text(item.shot, fontSize=20.sp)
                             Icon(Icons.Default.Edit,  "Edit")
                         }
                     }
@@ -169,8 +170,9 @@ fun ChoixBatonScreen(state: State<ShotState>, onEvent: (ShotEvent) -> Unit,
                     items(items = state.value.shotavailableList, key = {it.shot}) { item ->
                         Button(onClick = {
                             onEvent(ShotEvent.OnChooseShot(item.shot))
-                        }) {
-                            Text(item.shot)
+                        },
+                            Modifier.height(80.dp)) {
+                            Text(item.shot, fontSize=20.sp)
                         }
                     }
                 }
@@ -183,7 +185,7 @@ fun ChoixBatonScreen(state: State<ShotState>, onEvent: (ShotEvent) -> Unit,
                     Button(onClick = {
                         onEvent(ShotEvent.SETDEFAULT)
                     }) {
-                        Text("Set Default")
+                        Text("Set Default", fontSize=20.sp)
                         Icon(Icons.Default.Refresh, contentDescription = "Set Default")
                     }
                     Button(onClick = {
@@ -384,45 +386,93 @@ fun PuttScreen(onEvent: (ShotEvent) -> Unit) {
 
 @Composable
 fun CheckScreen(state: State<ShotState>, onEvent: (ShotEvent) -> Unit) {
-    if(state.value.is_success_open) {
-        CheckBody(nom = "Successful shot?",
-            onEvent, ShotEvent::OnChangedsucess)
-    }
-    if(state.value.is_green_open) {
-        CheckBody(nom = "Is on the green?",
-            onEvent, ShotEvent::OnChangedgreen)
-    }
-    if(state.value.is_penalty_open) {
-        CheckBody(nom = "Got a penalty?",
-            onEvent, ShotEvent::OnChangedpenalty)
-    }
-    if(state.value.is_reset_open) {
-        CheckBody(nom = "Had to replay the shot (< min(75% of yards, 100y))?",
-            onEvent, ShotEvent::OnChangedreset)
+    Column(
+        Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        if (state.value.is_success_open) {
+            CheckBody(
+                nom = "Successful shot?",
+                onEvent, ShotEvent::OnChangedsucess,
+                Modifier
+                    .height(180.dp)
+                    .width(300.dp)
+            )
+        }
+        if (state.value.is_green_open) {
+            CheckBody(
+                nom = "Is on the green?",
+                onEvent, ShotEvent::OnChangedgreen,
+                Modifier
+                    .height(180.dp)
+                    .width(300.dp)
+            )
+        }
+        if (state.value.is_penalty_open) {
+            CheckBody(
+                nom = "Got a penalty?",
+                onEvent, ShotEvent::OnChangedpenalty,
+                Modifier
+                    .height(180.dp)
+                    .width(300.dp)
+            )
+        }
+        if (state.value.is_reset_open) {
+            CheckBody(
+                nom = "Had to replay the shot (< min(75% of yards, 100y))?",
+                onEvent, ShotEvent::OnChangedreset,
+                Modifier
+                    .height(180.dp)
+                    .width(300.dp)
+            )
+        }
+        if (state.value.is_success_open || state.value.is_green_open || state.value.is_penalty_open || state.value.is_reset_open) {
+            Spacer(modifier = Modifier.height(100.dp))
+            Button(onClick = {
+                onEvent(ShotEvent.DismissShot)
+            },
+                Modifier
+                    .height(180.dp)
+                    .width(300.dp)) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "Cancel",
+                    modifier = Modifier.size(40.dp))
+            }
+        }
     }
 }
 
 @Composable
-fun CheckBody(nom: String, onEvent: (ShotEvent) -> Unit, event: (Int) -> ShotEvent) {
-    Column {
-        Text("${nom}")
-        Button(onClick = {
-            onEvent(event(2))
-        }) {
-            Icon(Icons.Default.Done, "Yes")
+fun CheckBody(nom: String, onEvent: (ShotEvent) -> Unit, event: (Int) -> ShotEvent, modifier: Modifier) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = Modifier.height(20.dp))
+        Text("${nom}", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(20.dp))
+        Button(
+            onClick = {onEvent(event(2))},
+            modifier = modifier
+        ) {
+            Icon(Icons.Default.Done, "Yes",
+                modifier = Modifier.size(40.dp))
         }
+        Spacer(modifier = Modifier.height(20.dp))
         Button(onClick = {
             onEvent(event(1))
-        }) {
-            Text("?")
+        },
+            modifier = modifier) {
+            Text(text="?", fontSize=40.sp)
             //TODO ajouter l'icône téléchargé du point d'interrogation. question_mark-24
             //val imageView: ImageView = findViewById(R.id.custom_icon)
             //imageView.setImageResource(R.drawable.ic_custom_icon)
         }
+        Spacer(modifier = Modifier.height(20.dp))
         Button(onClick = {
             onEvent(event(0))
-        }) {
-            Icon(Icons.Default.Close, "No")
+        },
+            modifier = modifier) {
+            Icon(Icons.Default.Close, "No",
+                modifier = Modifier.size(60.dp))
         }
     }
 }

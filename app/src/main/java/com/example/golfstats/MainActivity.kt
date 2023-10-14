@@ -1,11 +1,13 @@
 package com.example.golfstats
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -13,11 +15,16 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.golfstats.ui.AppViewModelProvider
 import com.example.golfstats.ui.theme.GolfStatsTheme
 import com.example.golfstats.ui.MenuScreen
 import com.example.golfstats.ui.Sessions.SessionsScreen
 import com.example.golfstats.ui.Sessions.StatSessionsScreen
+import com.example.golfstats.ui.Sessions.StatsViewModel
+import com.example.golfstats.ui.Shots.ShotEvent
 import com.example.golfstats.ui.Shots.ShotSessionScreen
+import com.example.golfstats.ui.Shots.ShotViewModel
+import com.example.golfstats.ui.Stats.StatEvent
 import com.example.golfstats.ui.Stats.StatsScreen
 import com.example.golfstats.ui.Yardages.YardagesScreen
 
@@ -96,7 +103,13 @@ fun GolfApp(
                 )) {
                 val session_id = it.arguments?.getInt("session_id")
                 if (session_id != null) {
-                    ShotSessionScreen(session_id = session_id, navController = navController)
+                    val viewModel: ShotViewModel = viewModel(factory = AppViewModelProvider.Factory)
+                    val state = viewModel.state.collectAsState()
+                    val onEvent = viewModel::onEvent
+
+                    onEvent(ShotEvent.SetSessionId(session_id))
+
+                    ShotSessionScreen(state, viewModel.newShotAvailable, viewModel.error_gen, onEvent, navController = navController)
                 }
             }
         }
@@ -118,7 +131,14 @@ fun GolfApp(
                 )) {
                 val session_id = it.arguments?.getInt("session_id")
                 if (session_id != null) {
-                    StatsScreen(session_id = session_id, navController = navController)
+                    val viewModel: StatsViewModel = viewModel(factory = AppViewModelProvider.Factory)
+                    val state = viewModel.state.collectAsState()
+                    val onEvent = viewModel::onEvent
+
+                    onEvent(StatEvent.Creation)
+                    onEvent(StatEvent.SetSessionId(session_id))
+
+                    StatsScreen(state, viewModel::onEvent, navController = navController)
                 }
             }
         }

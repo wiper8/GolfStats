@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 class ShotsOffRepo(private val shotDao: ShotsDao): ShotsRepo {
     override fun getShots(): Flow<List<ShotRow>> = shotDao.getShots()
     override fun getSessionShots(session_id: Int): Flow<List<ShotRow>> = shotDao.getSessionShots(session_id)
+    override fun getUniqueAllShots(): Flow<List<String>> = shotDao.getUniqueAllShots()
     override fun getUniqueShots(session_id: Int): Flow<List<String>> = shotDao.getUniqueShots(session_id)
     override fun getItem(id: Int): Flow<ShotRow?> = shotDao.getItem(id)
     override suspend fun upsert(row: ShotRow) = shotDao.upsert(row)

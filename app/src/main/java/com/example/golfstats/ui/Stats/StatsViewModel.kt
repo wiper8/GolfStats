@@ -56,18 +56,35 @@ class StatsViewModel(val shotsRepo: ShotsRepo, val shotsavailableRepo: ShotsAvai
                     )
                 }
                 viewModelScope.launch {
-                    shotsRepo.getSessionShots(_state.value.session_id).collect { l ->
-                        var maximum = 4
-                        l.forEachIndexed {i, e->
-                            if(e.shot.length > maximum) {
-                                maximum = e.shot.length
+                    if(_state.value.session_id == -1) {
+                        shotsRepo.getShots().collect { l ->
+                            var maximum = 4
+                            l.forEachIndexed { i, e ->
+                                if (e.shot.length > maximum) {
+                                    maximum = e.shot.length
+                                }
+                            }
+                            _state.update {
+                                it.copy(
+                                    shotsList = l,
+                                    longest_shot_name = maximum
+                                )
                             }
                         }
-                        _state.update {
-                            it.copy(
-                                shotsList = l,
-                                longest_shot_name = maximum
-                            )
+                    } else {
+                        shotsRepo.getSessionShots(_state.value.session_id).collect { l ->
+                            var maximum = 4
+                            l.forEachIndexed { i, e ->
+                                if (e.shot.length > maximum) {
+                                    maximum = e.shot.length
+                                }
+                            }
+                            _state.update {
+                                it.copy(
+                                    shotsList = l,
+                                    longest_shot_name = maximum
+                                )
+                            }
                         }
                     }
                 }
@@ -75,84 +92,168 @@ class StatsViewModel(val shotsRepo: ShotsRepo, val shotsavailableRepo: ShotsAvai
 
             StatEvent.GetStats -> {
                 viewModelScope.launch {
-                    shotsRepo.getUniqueShots(_state.value.session_id).collect { l ->
-                        //ordonner selon l'ordre des id des shotsavailable
-                        var new_order = l.toMutableList()
-                        var j = 0
-                        var k = 0
-                        while(true) {
-                            if(j == _state.value.shotsAvailableList.size) break
-                            if(l.contains(_state.value.shotsAvailableList[j].shot)) {
-                               new_order[k] = _state.value.shotsAvailableList[j].shot
-                               k++
+                    if(_state.value.session_id == -1) {
+                        shotsRepo.getUniqueAllShots().collect { l ->
+                            //ordonner selon l'ordre des id des shotsavailable
+                            var new_order = l.toMutableList()
+                            var j = 0
+                            var k = 0
+                            while(true) {
+                                if(j == _state.value.shotsAvailableList.size) break
+                                if(l.contains(_state.value.shotsAvailableList[j].shot)) {
+                                    new_order[k] = _state.value.shotsAvailableList[j].shot
+                                    k++
+                                }
+                                j++
                             }
-                            j++
-                        }
-                        _state.update {
-                            it.copy(
-                                uniqueshotsname = new_order
-                            )
-                        }
+                            _state.update {
+                                it.copy(
+                                    uniqueshotsname = new_order
+                                )
+                            }
 
-                        var success = MutableList<Int>(_state.value.uniqueshotsname.size) { 0 }
-                        var successTry = MutableList<Int>(_state.value.uniqueshotsname.size) { 0 }
-                        var green = MutableList<Int>(_state.value.uniqueshotsname.size) { 0 }
-                        var greenTry = MutableList<Int>(_state.value.uniqueshotsname.size) { 0 }
-                        var penalty = MutableList<Int>(_state.value.uniqueshotsname.size) { 0 }
-                        var penaltyTry = MutableList<Int>(_state.value.uniqueshotsname.size) { 0 }
-                        var reset = MutableList<Int>(_state.value.uniqueshotsname.size) { 0 }
-                        var resetTry = MutableList<Int>(_state.value.uniqueshotsname.size) { 0 }
-                        var putt = MutableList<Int>(5) { 0 }
+                            var success = MutableList<Int>(_state.value.uniqueshotsname.size) { 0 }
+                            var successTry = MutableList<Int>(_state.value.uniqueshotsname.size) { 0 }
+                            var green = MutableList<Int>(_state.value.uniqueshotsname.size) { 0 }
+                            var greenTry = MutableList<Int>(_state.value.uniqueshotsname.size) { 0 }
+                            var penalty = MutableList<Int>(_state.value.uniqueshotsname.size) { 0 }
+                            var penaltyTry = MutableList<Int>(_state.value.uniqueshotsname.size) { 0 }
+                            var reset = MutableList<Int>(_state.value.uniqueshotsname.size) { 0 }
+                            var resetTry = MutableList<Int>(_state.value.uniqueshotsname.size) { 0 }
+                            var putt = MutableList<Int>(5) { 0 }
+                            if (_state.value.uniqueshotsname.size > 0) {
 
-                        if (_state.value.uniqueshotsname.size > 0) {
+                                _state.value.uniqueshotsname.forEachIndexed { i, shot_unique ->
+                                    for (shot in _state.value.shotsList) {
+                                        if(shot.shot == shot_unique) {
 
-                            _state.value.uniqueshotsname.forEachIndexed { i, shot_unique ->
-                                for (shot in _state.value.shotsList) {
-                                    if(shot.shot == shot_unique) {
-
-                                        if (shot.is_putt) {
-                                            putt[shot.success - 1]++
-                                        } else {
-                                            if (shot.success == 2) {
-                                                success[i]++
-                                                successTry[i]++
-                                            } else if (shot.success == 0) {
-                                                successTry[i]++
-                                            }
-                                            if (shot.green == 2) {
-                                                green[i]++
-                                                greenTry[i]++
-                                            } else if (shot.green == 0) {
-                                                greenTry[i]++
-                                            }
-                                            if (shot.penalty == 2) {
-                                                penalty[i]++
-                                                penaltyTry[i]++
-                                            } else if (shot.penalty == 0) {
-                                                penaltyTry[i]++
-                                            }
-                                            if (shot.reset == 2) {
-                                                reset[i]++
-                                                resetTry[i]++
-                                            } else if (shot.reset == 0) {
-                                                resetTry[i]++
+                                            if (shot.is_putt) {
+                                                putt[shot.success - 1]++
+                                            } else {
+                                                if (shot.success == 2) {
+                                                    success[i]++
+                                                    successTry[i]++
+                                                } else if (shot.success == 0) {
+                                                    successTry[i]++
+                                                }
+                                                if (shot.green == 2) {
+                                                    green[i]++
+                                                    greenTry[i]++
+                                                } else if (shot.green == 0) {
+                                                    greenTry[i]++
+                                                }
+                                                if (shot.penalty == 2) {
+                                                    penalty[i]++
+                                                    penaltyTry[i]++
+                                                } else if (shot.penalty == 0) {
+                                                    penaltyTry[i]++
+                                                }
+                                                if (shot.reset == 2) {
+                                                    reset[i]++
+                                                    resetTry[i]++
+                                                } else if (shot.reset == 0) {
+                                                    resetTry[i]++
+                                                }
                                             }
                                         }
                                     }
                                 }
+
+                                _state.update {
+                                    it.copy(
+                                        success = success,
+                                        successTry = successTry,
+                                        green = green,
+                                        greenTry = greenTry,
+                                        penalty = penalty,
+                                        penaltyTry = penaltyTry,
+                                        reset = reset,
+                                        resetTry = resetTry,
+                                        putts = putt
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        shotsRepo.getUniqueShots(_state.value.session_id).collect { l ->
+                            //ordonner selon l'ordre des id des shotsavailable
+                            var new_order = l.toMutableList()
+                            var j = 0
+                            var k = 0
+                            while(true) {
+                                if(j == _state.value.shotsAvailableList.size) break
+                                if(l.contains(_state.value.shotsAvailableList[j].shot)) {
+                                    new_order[k] = _state.value.shotsAvailableList[j].shot
+                                    k++
+                                }
+                                j++
                             }
                             _state.update {
                                 it.copy(
-                                    success = success,
-                                    successTry = successTry,
-                                    green = green,
-                                    greenTry = greenTry,
-                                    penalty = penalty,
-                                    penaltyTry = penaltyTry,
-                                    reset = reset,
-                                    resetTry = resetTry,
-                                    putts = putt
+                                    uniqueshotsname = new_order
                                 )
+                            }
+
+                            var success = MutableList<Int>(_state.value.uniqueshotsname.size) { 0 }
+                            var successTry = MutableList<Int>(_state.value.uniqueshotsname.size) { 0 }
+                            var green = MutableList<Int>(_state.value.uniqueshotsname.size) { 0 }
+                            var greenTry = MutableList<Int>(_state.value.uniqueshotsname.size) { 0 }
+                            var penalty = MutableList<Int>(_state.value.uniqueshotsname.size) { 0 }
+                            var penaltyTry = MutableList<Int>(_state.value.uniqueshotsname.size) { 0 }
+                            var reset = MutableList<Int>(_state.value.uniqueshotsname.size) { 0 }
+                            var resetTry = MutableList<Int>(_state.value.uniqueshotsname.size) { 0 }
+                            var putt = MutableList<Int>(5) { 0 }
+
+                            if (_state.value.uniqueshotsname.size > 0) {
+
+                                _state.value.uniqueshotsname.forEachIndexed { i, shot_unique ->
+                                    for (shot in _state.value.shotsList) {
+                                        if(shot.shot == shot_unique) {
+
+                                            if (shot.is_putt) {
+                                                putt[shot.success - 1]++
+                                            } else {
+                                                if (shot.success == 2) {
+                                                    success[i]++
+                                                    successTry[i]++
+                                                } else if (shot.success == 0) {
+                                                    successTry[i]++
+                                                }
+                                                if (shot.green == 2) {
+                                                    green[i]++
+                                                    greenTry[i]++
+                                                } else if (shot.green == 0) {
+                                                    greenTry[i]++
+                                                }
+                                                if (shot.penalty == 2) {
+                                                    penalty[i]++
+                                                    penaltyTry[i]++
+                                                } else if (shot.penalty == 0) {
+                                                    penaltyTry[i]++
+                                                }
+                                                if (shot.reset == 2) {
+                                                    reset[i]++
+                                                    resetTry[i]++
+                                                } else if (shot.reset == 0) {
+                                                    resetTry[i]++
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                _state.update {
+                                    it.copy(
+                                        success = success,
+                                        successTry = successTry,
+                                        green = green,
+                                        greenTry = greenTry,
+                                        penalty = penalty,
+                                        penaltyTry = penaltyTry,
+                                        reset = reset,
+                                        resetTry = resetTry,
+                                        putts = putt
+                                    )
+                                }
                             }
                         }
                     }
