@@ -2,5 +2,11 @@
 Android app to collect and store multiple stats on a golf range or golf course
 
 ## TODO
--  ajouter voir stats pour toutes sessions (all_stats)
--  débugger les shots par session qui n'affichent plus (doit afficher par session, semble y avoir une déconnection entre le state et le viewModel)
+- Ajouter le feature de partie de golf.
+- Pouvoir créer des terrains
+- pouvoir créer des sessions associées à un terrain
+- pouvoir créer des trous
+- associer les trous au terrain
+- pouvoir ajouter des coups selon la session
+- montrer le score en direct si désiré
+- montrer les objectifs en direct si désiré et si ça va bien selon le score présent.
