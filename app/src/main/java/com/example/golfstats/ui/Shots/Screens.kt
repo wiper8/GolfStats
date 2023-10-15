@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -61,25 +62,29 @@ fun ShotSessionScreen(
             Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
+            Spacer(modifier = Modifier.height(20.dp))
             Row(Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center) {
-                Button(
-                    onClick = {
-                        onEvent(ShotEvent.onAddShot)
-                    },
-                    Modifier.width(120.dp)
-                ) {
-                    Icon(Icons.Default.Add, "Add Shot")
-                }
-                Spacer(modifier = Modifier.width(30.dp))
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically) {
+                Spacer(Modifier.height(10.dp))
                 Button(
                     onClick = {
                         navController.popBackStack(route = Screens.Sessions.name, inclusive = false)
                         onEvent(ShotEvent.DismissShot)
                     },
-                    Modifier.width(120.dp)
+                    Modifier.width(120.dp).height(120.dp)
                 ) {
-                    Icon(Icons.Default.Done, "Finish")
+                    Icon(Icons.Default.Done, "Finish", Modifier.size(50.dp))
+                }
+                Spacer(modifier = Modifier.width(30.dp))
+                Button(
+                    onClick = {
+                        onEvent(ShotEvent.onAddShot)
+                    },
+                    Modifier.width(120.dp).height(120.dp)
+                ) {
+                    Icon(Icons.Default.Add, "Add Shot", Modifier.size(50.dp))
                 }
             }
             Spacer(modifier = Modifier.height(20.dp))
@@ -118,6 +123,7 @@ private fun ShotsItem(
     if(shot_row.is_putt) {
         Row {
             Text(" " + shot_row.success.toString() + " putt")
+            Spacer(modifier = Modifier.height(10.dp))
             Button(onClick = {
                 onEvent(ShotEvent.DeleteRecordedShot(shot_row))
             }) {
@@ -128,6 +134,7 @@ private fun ShotsItem(
     } else {
         Row {
             Text(text = shot_row.shot)
+            Spacer(modifier = Modifier.height(10.dp))
             Column {
                 Text(text = " success : " + shot_row.success.toString() + " green : " + shot_row.green.toString())
                 Text(text = " penalty : " + shot_row.penalty.toString() + " reset : " + shot_row.reset.toString())
@@ -149,33 +156,43 @@ private fun ShotsItem(
 fun ChoixBatonScreen(state: State<ShotState>, onEvent: (ShotEvent) -> Unit,
                      newShotAvailable: ShotsAvailableRow, error_gen: Boolean) {
     if(!state.value.is_edit_choix_club_open) {
-        Column {
+        Spacer(Modifier.height(20.dp))
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text("Choix baton", fontSize=20.sp)
+            Spacer(Modifier.height(10.dp))
             if(state.value.is_delete_option) {
                 LazyVerticalGrid(columns = GridCells.Fixed(3),
-                    contentPadding = PaddingValues(12.dp)
+                    verticalArrangement = Arrangement.Center
                     ) {
                     items(items = state.value.shotavailableList, key = {it.shot}) {item ->
-                        Button(onClick = {
-                            onEvent(ShotEvent.onEditExistingShotAvailable(item))
-                        },
-                            Modifier.height(80.dp)) {
-                            Text(item.shot, fontSize=20.sp)
-                            Icon(Icons.Default.Edit,  "Edit")
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Button(onClick = {
+                                onEvent(ShotEvent.onEditExistingShotAvailable(item))
+                            },
+                                Modifier.height(80.dp).width(120.dp)) {
+                                Text(item.shot, fontSize=20.sp)
+                                Icon(Icons.Default.Edit,  "Edit")
+                            }
+                            Spacer(Modifier.height(10.dp))
                         }
                     }
                 }
             } else {
-                LazyVerticalGrid(columns = GridCells.Fixed(3)) {
+                LazyVerticalGrid(columns = GridCells.Fixed(3),
+                    verticalArrangement = Arrangement.Center) {
                     items(items = state.value.shotavailableList, key = {it.shot}) { item ->
-                        Button(onClick = {
-                            onEvent(ShotEvent.OnChooseShot(item.shot))
-                        },
-                            Modifier.height(80.dp)) {
-                            Text(item.shot, fontSize=20.sp)
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Button(onClick = {
+                                onEvent(ShotEvent.OnChooseShot(item.shot))
+                            },
+                                Modifier.height(80.dp).width(120.dp)) {
+                                Text(item.shot, fontSize=20.sp)
+                            }
+                            Spacer(Modifier.height(10.dp))
                         }
                     }
                 }
+                Spacer(Modifier.height(20.dp))
                 Row {
                     Button(onClick = {
                         onEvent(ShotEvent.DismissShot)
@@ -372,12 +389,16 @@ fun NewShotAvailable(
 
 @Composable
 fun PuttScreen(onEvent: (ShotEvent) -> Unit) {
-    LazyColumn() {
+    LazyColumn(horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxSize()) {
         items(items = listOf(1, 2, 3, 4, 5), key = {it}) {n ->
+            Spacer(Modifier.height(20.dp))
             Button(onClick = {
                 onEvent(ShotEvent.OnChangedputt(n))
-            }) {
-                Text(n.toString())
+            },
+                Modifier.width(130.dp).height(130.dp)) {
+                Text(n.toString(), fontSize = 60.sp)
             }
         }
     }
@@ -454,14 +475,14 @@ fun CheckBody(nom: String, onEvent: (ShotEvent) -> Unit, event: (Int) -> ShotEve
             modifier = modifier
         ) {
             Icon(Icons.Default.Done, "Yes",
-                modifier = Modifier.size(40.dp))
+                modifier = Modifier.size(60.dp))
         }
         Spacer(modifier = Modifier.height(20.dp))
         Button(onClick = {
             onEvent(event(1))
         },
             modifier = modifier) {
-            Text(text="?", fontSize=40.sp)
+            Text(text="?", fontSize=60.sp)
             //TODO ajouter l'icône téléchargé du point d'interrogation. question_mark-24
             //val imageView: ImageView = findViewById(R.id.custom_icon)
             //imageView.setImageResource(R.drawable.ic_custom_icon)

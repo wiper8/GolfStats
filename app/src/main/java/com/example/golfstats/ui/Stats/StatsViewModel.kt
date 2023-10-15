@@ -121,6 +121,7 @@ class StatsViewModel(val shotsRepo: ShotsRepo, val shotsavailableRepo: ShotsAvai
                             var reset = MutableList<Int>(_state.value.uniqueshotsname.size) { 0 }
                             var resetTry = MutableList<Int>(_state.value.uniqueshotsname.size) { 0 }
                             var putt = MutableList<Int>(5) { 0 }
+                            Log.d("EEEEE", "intantiate ${penaltyTry}")
                             if (_state.value.uniqueshotsname.size > 0) {
 
                                 _state.value.uniqueshotsname.forEachIndexed { i, shot_unique ->
@@ -130,30 +131,34 @@ class StatsViewModel(val shotsRepo: ShotsRepo, val shotsavailableRepo: ShotsAvai
                                             if (shot.is_putt) {
                                                 putt[shot.success - 1]++
                                             } else {
+                                                Log.d("EEEEE", "shot.shot ${shot.shot}")
+                                                Log.d("EEEEE", "avant ${penalty[i]}")
                                                 if (shot.success == 2) {
                                                     success[i]++
                                                     successTry[i]++
+                                                    if (shot.green == 2) {
+                                                        green[i]++
+                                                        greenTry[i]++
+                                                    } else if (shot.green == 0) {
+                                                        greenTry[i]++
+                                                    }
                                                 } else if (shot.success == 0) {
                                                     successTry[i]++
+                                                    if (shot.penalty == 2) {
+                                                        penalty[i]++
+                                                        penaltyTry[i]++
+                                                    } else if (shot.penalty == 0) {
+                                                        penaltyTry[i]++
+                                                        if (shot.reset == 2) {
+                                                            reset[i]++
+                                                            resetTry[i]++
+                                                        } else if (shot.reset == 0) {
+                                                            resetTry[i]++
+                                                        }
+                                                    }
                                                 }
-                                                if (shot.green == 2) {
-                                                    green[i]++
-                                                    greenTry[i]++
-                                                } else if (shot.green == 0) {
-                                                    greenTry[i]++
-                                                }
-                                                if (shot.penalty == 2) {
-                                                    penalty[i]++
-                                                    penaltyTry[i]++
-                                                } else if (shot.penalty == 0) {
-                                                    penaltyTry[i]++
-                                                }
-                                                if (shot.reset == 2) {
-                                                    reset[i]++
-                                                    resetTry[i]++
-                                                } else if (shot.reset == 0) {
-                                                    resetTry[i]++
-                                                }
+                                                Log.d("EEEEE", "apres ${penalty[i]}")
+
                                             }
                                         }
                                     }
