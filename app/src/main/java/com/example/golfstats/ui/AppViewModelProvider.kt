@@ -35,7 +35,8 @@ object AppViewModelProvider {
             YardageViewModel(golfstatsApplication().container.yardagesRepo)
         }
         initializer {
-            SessionsViewModel(golfstatsApplication().container.sessionsRepo)
+            SessionsViewModel(golfstatsApplication().container.sessionsRepo,
+                golfstatsApplication().container.shotsRepo)
         }
         initializer {
             ShotViewModel(golfstatsApplication().container.shotsRepo,

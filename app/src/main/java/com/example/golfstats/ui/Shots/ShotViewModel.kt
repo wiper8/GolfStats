@@ -413,7 +413,6 @@ class ShotViewModel(val shotsRepo: ShotsRepo, val shotavailableRepo: ShotsAvaila
             is ShotEvent.DeleteRecordedShot -> {
                 viewModelScope.launch {
                     shotsRepo.delete(event.shot)
-                    delay(300L) // Animation delay
                 }
             }
         }

@@ -8,6 +8,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.golfstats.data.Sessions.SessionRow
 import com.example.golfstats.data.Sessions.SessionsRepo
+import com.example.golfstats.data.Shots.ShotsRepo
+import com.example.golfstats.ui.Shots.ShotEvent
+import com.example.golfstats.ui.Stats.StatEvent
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -18,16 +21,18 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class SessionsViewModel(val sessionsRepo: SessionsRepo) : ViewModel() {
+class SessionsViewModel(val sessionsRepo: SessionsRepo, val shotsRepo: ShotsRepo) : ViewModel() {
 
     private val _state = MutableStateFlow(SessionsState())
 
     val state = combine(
         _state,
-        sessionsRepo.getSessions()
-    ) { state, sessionsList ->
+        sessionsRepo.getSessions(),
+        shotsRepo.getShots()
+    ) { state, sessionsList, allShots ->
         state.copy(
-            sessionsList = sessionsList
+            sessionsList = sessionsList,
+            allShots = allShots
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), SessionsState())
 
@@ -91,13 +96,22 @@ class SessionsViewModel(val sessionsRepo: SessionsRepo) : ViewModel() {
             }
             is SessionEvent.Delete -> {
                 viewModelScope.launch {
-                    _state.update {
-                        it.copy(
-                            is_new_screen_open = false
-                        )
-                    }
                     sessionsRepo.delete(event.row)
-                    delay(300L) // Animation delay
+                    shotsRepo.getShots().collect {l ->
+                        _state.update {
+                            it.copy(
+                                allShots = l,
+                                is_new_screen_open = false
+                            )
+                        }
+                        _state.value.allShots.forEach {
+                            if(it.session_id == event.row.id) {
+
+                                shotsRepo.delete(it)
+                                //StatEvent.GetStats
+                            }
+                        }
+                    }
                 }
             }
         }

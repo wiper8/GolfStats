@@ -123,7 +123,7 @@ private fun ShotsItem(
     if(shot_row.is_putt) {
         Row {
             Text(" " + shot_row.success.toString() + " putt")
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.width(10.dp))
             Button(onClick = {
                 onEvent(ShotEvent.DeleteRecordedShot(shot_row))
             }) {
@@ -134,7 +134,7 @@ private fun ShotsItem(
     } else {
         Row {
             Text(text = shot_row.shot)
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.width(10.dp))
             Column {
                 Text(text = " success : " + shot_row.success.toString() + " green : " + shot_row.green.toString())
                 Text(text = " penalty : " + shot_row.penalty.toString() + " reset : " + shot_row.reset.toString())
