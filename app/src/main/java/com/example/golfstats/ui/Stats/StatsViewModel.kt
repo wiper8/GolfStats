@@ -60,7 +60,7 @@ class StatsViewModel(val shotsRepo: ShotsRepo, val shotsavailableRepo: ShotsAvai
 
                         shotsRepo.getShots().collect { l ->
                             var maximum = 4
-                            Log.d("EEEEE", "dans stats avec ${l}")
+
                             l.forEachIndexed { i, e ->
                                 if (e.shot.length > maximum) {
                                     maximum = e.shot.length

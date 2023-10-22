@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,11 +30,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.golfstats.Screens
 import com.example.golfstats.data.Yardages.YardageRow
 import com.example.golfstats.ui.AppViewModelProvider
+import com.example.golfstats.ui.Shots.ShotEvent
 import com.example.golfstats.ui.check_int
 import kotlinx.coroutines.launch
 
@@ -56,6 +59,12 @@ fun YardagesScreen(
                     navController.popBackStack(route = Screens.Yardages.name, inclusive = true)
                 }) {
                     Icon(Icons.Default.ArrowBack, "return")
+                }
+                Button(onClick = {
+                    onEvent(YardageEvent.SETDEFAULT)
+                }) {
+                    Text("Set Default", fontSize=20.sp)
+                    Icon(Icons.Default.Refresh, contentDescription = "Set Default")
                 }
                 Button(onClick = {
                     onEvent(YardageEvent.OnAddNewClick)

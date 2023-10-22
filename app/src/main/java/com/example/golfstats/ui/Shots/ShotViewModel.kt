@@ -122,7 +122,6 @@ class ShotViewModel(val shotsRepo: ShotsRepo, val shotavailableRepo: ShotsAvaila
                             "Driver", 13, true, true, true, false
                         )
                     )
-                    delay(300L)
                 }
             }
             ShotEvent.onAddShot -> {
