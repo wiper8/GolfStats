@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,7 +25,9 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 
 @Composable
-fun MenuScreen(navController: NavHostController) {
+fun MenuScreen(navController: NavHostController, modifier: Modifier = Modifier
+    .width(260.dp)
+    .height(160.dp)) {
 
     Column(
         Modifier.fillMaxSize(),
@@ -34,23 +37,21 @@ fun MenuScreen(navController: NavHostController) {
         Button(onClick = {
             navController.navigate("yardages_graph")
         },
-            Modifier
-                .width(250.dp)
-                .height(180.dp)) {
+            modifier = modifier) {
             Text(text = "Yardages", fontSize = 40.sp)
         }
         Spacer(Modifier.height(30.dp))
-        /*Button(onClick = {
+        Button(onClick = {
             navController.navigate("course_graph")
-        }) {
-            Text(text="Scorecard+")
-        }*/
+        },
+            modifier = modifier) {
+            Text(text="Scorecard+", fontSize = 40.sp)
+        }
+        Spacer(Modifier.height(30.dp))
         Button(onClick = {
             navController.navigate("range_graph")
         },
-            Modifier
-                .width(250.dp)
-                .height(180.dp)) {
+            modifier = modifier) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -63,9 +64,7 @@ fun MenuScreen(navController: NavHostController) {
         Button(onClick = {
             navController.navigate("stats_graph")
         },
-            Modifier
-                .width(250.dp)
-                .height(180.dp)) {
+            modifier = modifier) {
             Text(text="Stats", fontSize = 40.sp)
         }
     }
@@ -74,16 +73,23 @@ fun MenuScreen(navController: NavHostController) {
 @Composable
 fun ButtonEditDel(
     deleteEvent: () -> Unit,
-    saveEvent: () -> Unit
+    saveEvent: () -> Unit,
+    saveCondition: Boolean
 ) {
     Row {
         Button(onClick = deleteEvent) {
             Icon(Icons.Default.Close, contentDescription = "Cancel")
         }
-        Button(
-            onClick = saveEvent
-        ) {
-            Icon(Icons.Default.Done, contentDescription = "Save")
+        if(saveCondition) {
+            Button(
+                onClick = saveEvent
+            ) {
+                Icon(Icons.Default.Done, contentDescription = "Save")
+            }
+        } else {
+            FilledTonalButton(onClick = {}) {
+                Icon(Icons.Default.Done, contentDescription = "Save")
+            }
         }
     }
 }

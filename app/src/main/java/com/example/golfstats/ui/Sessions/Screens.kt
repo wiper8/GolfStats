@@ -15,9 +15,11 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -30,26 +32,29 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.golfstats.Screens
+import com.example.golfstats.data.Course.CourseRow
 import com.example.golfstats.data.Sessions.SessionRow
 import com.example.golfstats.data.Sessions.SessionsRepo
 import com.example.golfstats.ui.AppViewModelProvider
 import com.example.golfstats.ui.ButtonEditDel
-import kotlin.reflect.KFunction1
+import com.example.golfstats.ui.Course.AvailableCourses
+import com.example.golfstats.ui.Shots.ShotEvent
 
 @Composable
 fun SessionsScreen(
     navController: NavHostController,
-    onNavClick: (Int) -> Unit
+    onNavClick: (Int) -> Unit,
+    range_only: Boolean = true
 ) {
     val viewModel: SessionsViewModel = viewModel(factory = AppViewModelProvider.Factory)
     val state = viewModel.state.collectAsState()
     val onEvent = viewModel::onEvent
 
-    if(!state.value.is_new_screen_open) {
+    if(!state.value.is_new_screen_open && !state.value.is_new_course_screen_open) {
 
         Column {
             SessionsList(sessionsList = state.value.sessionsList,
-                onEvent = onEvent, onNavClick = onNavClick)
+                onEvent = onEvent, onNavClick = onNavClick, range_only = range_only)
             Row {
                 Button(onClick = {
                     navController.popBackStack(route = Screens.Menu.name, inclusive = false)
@@ -63,8 +68,8 @@ fun SessionsScreen(
                 }
             }
         }
-    } else {
-        NewSessionRowScreen(newRow = viewModel.newRow, onEvent = onEvent)
+    } else if(state.value.is_new_screen_open){
+        NewSessionRowScreen(newRow = viewModel.newRow, onEvent = onEvent, range_only = range_only, state = state.value, viewModel.current_selected_course)
     }
 }
 
@@ -98,11 +103,16 @@ fun StatSessionsScreen(
 @Composable
 private fun SessionsList(
     sessionsList: List<SessionRow>, onEvent: (SessionEvent) -> Unit,
-    onNavClick: (Int) -> Unit, modifier: Modifier = Modifier
+    onNavClick: (Int) -> Unit, modifier: Modifier = Modifier, range_only: Boolean
 ) {
     LazyColumn(modifier = modifier) {
         items(items = sessionsList, key = { it.id }) { item ->
-            SessionItem(row = item, onEvent = onEvent, onNavClick = onNavClick)
+            if(item.type == "range" && range_only) {
+                SessionItem(row = item, onEvent = onEvent, onNavClick = onNavClick)
+            }
+            if(item.type != "range" && !range_only) {
+                SessionItem(row = item, onEvent = onEvent, onNavClick = onNavClick)
+            }
         }
     }
 }
@@ -165,6 +175,8 @@ private fun StatSessionItem(
             style = MaterialTheme.typography.titleLarge,
         )
         Spacer(Modifier.weight(1f))
+        Text(text=row.type)
+        Spacer(Modifier.weight(1f))
         Text(text = "ID : ${row.id}")
         Button(onClick = {
             onNavClick(row.id)
@@ -178,8 +190,10 @@ private fun StatSessionItem(
 @Composable
 fun NewSessionRowScreen(
     newRow: SessionRow,
-    onEvent: (SessionEvent) -> Unit
-) {
+    onEvent: (SessionEvent) -> Unit,
+    range_only: Boolean = true,
+    state: SessionsState,
+    current_selected_course: CourseRow) {
     Column {
         Column {
             OutlinedTextField(
@@ -192,10 +206,23 @@ fun NewSessionRowScreen(
                     .width(150.dp)
             )
         }
+        if(range_only) {
+            FilledTonalButton(onClick = {}) {
+                Text("Range")
+            }
+        } else {
+            AvailableCourses(state.allCourses)
+            Button(onClick = {//TODO
+                }) {
+                Text("Add New Course")
+            }
+        }
+        Log.d("EEEEE", current_selected_course.nom)
         ButtonEditDel({
             onEvent(SessionEvent.Dismiss)
         }, {
             onEvent(SessionEvent.Save)
-        })
+        },
+            (current_selected_course.nom != "" && current_selected_course.nom != "range" && !range_only) || range_only)
     }
 }

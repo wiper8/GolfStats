@@ -6,6 +6,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.golfstats.data.Course.CourseRepo
+import com.example.golfstats.data.Course.CourseRow
 import com.example.golfstats.data.Sessions.SessionRow
 import com.example.golfstats.data.Sessions.SessionsRepo
 import com.example.golfstats.data.Shots.ShotsRepo
@@ -21,22 +23,26 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class SessionsViewModel(val sessionsRepo: SessionsRepo, val shotsRepo: ShotsRepo) : ViewModel() {
+class SessionsViewModel(val sessionsRepo: SessionsRepo, val shotsRepo: ShotsRepo, val courseRepo: CourseRepo) : ViewModel() {
 
     private val _state = MutableStateFlow(SessionsState())
 
     val state = combine(
         _state,
         sessionsRepo.getSessions(),
-        shotsRepo.getShots()
-    ) { state, sessionsList, allShots ->
+        shotsRepo.getShots(),
+        courseRepo.getCourses()
+    ) { state, sessionsList, allShots, allCourses ->
         state.copy(
             sessionsList = sessionsList,
-            allShots = allShots
+            allShots = allShots,
+            allCourses = allCourses
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), SessionsState())
 
     var newRow: SessionRow by mutableStateOf(SessionRow())
+        private set
+    var current_selected_course: CourseRow by mutableStateOf(CourseRow())
         private set
 
     private fun validateInput(row: SessionRow): Boolean {
@@ -68,6 +74,11 @@ class SessionsViewModel(val sessionsRepo: SessionsRepo, val shotsRepo: ShotsRepo
             is SessionEvent.OnChangeddate -> {
                 newRow = newRow.copy(
                     date = event.date,
+                )
+            }
+            is SessionEvent.OnChangedtype -> {
+                newRow = newRow.copy(
+                    type = event.type
                 )
             }
             SessionEvent.Save -> {

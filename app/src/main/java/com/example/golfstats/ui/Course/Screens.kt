@@ -14,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -23,47 +24,33 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.golfstats.Screens
 import com.example.golfstats.data.Course.CourseRow
+import com.example.golfstats.data.ShotsAvailable.ShotsAvailableRow
 import com.example.golfstats.data.Yardages.YardageRow
 import com.example.golfstats.ui.AppViewModelProvider
+import com.example.golfstats.ui.Sessions.SessionEvent
+import com.example.golfstats.ui.Shots.ShotEvent
+import com.example.golfstats.ui.Shots.ShotState
 import com.example.golfstats.ui.check_int
 import kotlinx.coroutines.launch
 
 
-/*
-@Composable
-fun CourseScreen(
-    navController: NavHostController,
-    viewModel: CourseViewModel = viewModel(factory = AppViewModelProvider.Factory)
-) {
-    val UiState by viewModel.UiState.collectAsState()
-
-    Column() {
-        CourseList(courseList = UiState.courseList)
-        Row {
-            Button(onClick = {
-                navController.navigate(Screens.NewCourse.name)
-            }) {
-                Text(text = "Add")
-            }
-        }
-    }
-}
 
 @Composable
-private fun CourseList(
-    courseList: List<CourseRow>, modifier: Modifier = Modifier
+fun AvailableCourses(
+    coursesList: List<CourseRow>
 ) {
-    LazyColumn(modifier = modifier) {
-        items(items = courseList, key = { it.id }) { item ->
+    LazyColumn() {
+        items(items = coursesList, key = { it.id }) { item ->
             CourseItem(row = item)
         }
     }
 }
 
+
+
 @Composable
 private fun CourseItem(
-    row: CourseRow, modifier: Modifier = Modifier,
-    viewModel: CourseEntryViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    row: CourseRow, modifier: Modifier = Modifier
 ) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -82,65 +69,31 @@ private fun CourseItem(
             Text("Edit")
         }
         Button(onClick = {
-            coroutineScope.launch {
-                viewModel.delete(row)
-            }
+            //TODO
         }) {
             Text("Delete")
         }
     }
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewCourseRowScreen(
-    navController: NavHostController, modifier: Modifier = Modifier,
-    viewModel: CourseEntryViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    state: State<CourseState>,
+    newRow: CourseRow,
+    onEvent: (CourseEvent) -> Unit,
+    navController: NavHostController
 ) {
-    val coroutineScope = rememberCoroutineScope()
-    Column {
-        Column {
-            OutlinedTextField(
-                value = viewModel.UiState.courseDetails.nom,
-                onValueChange = {
-                    viewModel.updateUiState(viewModel.UiState.courseDetails.copy(nom = it))
-                },
-                label = {Text("Nom")},
-                modifier = Modifier
-                    .width(150.dp)
-            )
-            Row {
-                Button(onClick = {
-
-                }){
-                    Text("9")
-                }
-                Button(onClick = {
-
-                }){
-                    Text("18")
-                }
-            }
-        }
-        Row {
-            Button(onClick = {
-                navController.popBackStack(route = Screens.NewCourse.name, inclusive = true)
-                //navController.navigate(Screens.Yardages.name)
-            }) {
-                Text("Cancel")
-            }
-            Button(
-                onClick = {
-                    coroutineScope.launch {
-                        viewModel.save()
-                    }
-                    navController.popBackStack(route = Screens.NewCourse.name, inclusive = true)
-                    //navController.navigate(Screens.Yardages.name)
-                }
-            ) {
-                Text("Save")
-            }
-        }
-    }
+    Text("course_id ${newRow.id}")
+    Text("TODO c'est ici qu'on crée un nouveau terrain")
+    OutlinedTextField(
+        value = newRow.nom,
+        onValueChange = {
+            onEvent(CourseEvent.OnChangednom(it))
+        },
+        label = { Text("Nom") },
+        modifier = Modifier
+            .width(150.dp)
+    )
 }
-*/

@@ -1,6 +1,8 @@
 package com.example.golfstats
 
+import CourseViewModel
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
@@ -16,6 +18,8 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.golfstats.ui.AppViewModelProvider
+import com.example.golfstats.ui.Course.CourseEvent
+import com.example.golfstats.ui.Course.NewCourseRowScreen
 import com.example.golfstats.ui.theme.GolfStatsTheme
 import com.example.golfstats.ui.MenuScreen
 import com.example.golfstats.ui.Sessions.SessionsScreen
@@ -43,7 +47,6 @@ enum class Screens(val title: String) {
     Menu("home"),
     Yardages("yardages"),
     Course("course"),
-    PlayCourseSession("PlayCourseSession"),
     NewCourse("newcourse"),
     Sessions("Sessions"),
     Stats("stats"),
@@ -72,19 +75,33 @@ fun GolfApp(
             }
         }
 
-        /*navigation(
+        navigation(
             startDestination = Screens.Course.name,
-            route = "course_graph"
+            route="course_graph"
         ) {
-            composable(Screens.Sessions.name) {
+            composable(Screens.Course.name) {
                 SessionsScreen(navController = navController, onNavClick = {
-                    navController.navigate(Screens.PlayCourseSession.name + "/$it")
-                })
+                    navController.navigate(Screens.PlaySession.name + "/${it}")
+                }, range_only = false)
             }
-            composable(Screens.NewCourse.name) {
-                NewCourseRowScreen(navController)
+            composable(Screens.NewCourse.name + "/{course_id}",
+                arguments = listOf(
+                    navArgument("course_id") {
+                        type = NavType.IntType
+                    }
+                )) {
+                val course_id = it.arguments?.getInt("course_id")
+                if (course_id != null) {
+                    val viewModel: CourseViewModel = viewModel(factory = AppViewModelProvider.Factory)
+                    val state = viewModel.state.collectAsState()
+                    val onEvent = viewModel::onEvent
+                    Log.d("EEEEE", "setting course id")
+                    onEvent(CourseEvent.SetCourseId(course_id))
+                    Log.d("EEEEE", "set! opening newCoursescreen")
+                    NewCourseRowScreen(state, viewModel.newRow, onEvent, navController = navController)
+                }
             }
-        }*/
+        }
 
         navigation(
             startDestination = Screens.Sessions.name,
@@ -93,7 +110,7 @@ fun GolfApp(
             composable(Screens.Sessions.name) {
                 SessionsScreen(navController = navController, onNavClick = {
                     navController.navigate(Screens.PlaySession.name + "/${it}")
-                })
+                }, range_only = true)
             }
             composable(Screens.PlaySession.name + "/{session_id}",
                 arguments = listOf(

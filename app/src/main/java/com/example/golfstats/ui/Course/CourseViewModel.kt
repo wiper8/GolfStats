@@ -9,6 +9,7 @@ import com.example.golfstats.data.Course.CourseRepo
 import com.example.golfstats.data.Course.CourseRow
 import com.example.golfstats.ui.Course.CourseEvent
 import com.example.golfstats.ui.Course.CourseState
+import com.example.golfstats.ui.Shots.ShotEvent
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -36,11 +37,22 @@ class CourseViewModel(val courseRepo: CourseRepo) : ViewModel() {
         private set
 
     private fun validateInput(row: CourseRow): Boolean {
-        return row.nom.isNotBlank() && row.holes > 0
+        return row.nom.isNotBlank() && row.holes > 0 && row.nom != "range"
     }
 
     fun onEvent(event: CourseEvent) {
         when (event) {
+            is CourseEvent.SetCourseId -> {
+                viewModelScope.launch {
+                    courseRepo.getItem(event.course_id).collect { l ->
+                        _state.update {
+                            it.copy(
+                                course_id = event.course_id
+                            )
+                        }
+                    }
+                }
+            }
             is CourseEvent.Delete -> {
                 viewModelScope.launch {
                     _state.update {

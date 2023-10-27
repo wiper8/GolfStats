@@ -16,6 +16,7 @@
 
 package com.example.golfstats.ui
 
+import CourseViewModel
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
@@ -36,7 +37,8 @@ object AppViewModelProvider {
         }
         initializer {
             SessionsViewModel(golfstatsApplication().container.sessionsRepo,
-                golfstatsApplication().container.shotsRepo)
+                golfstatsApplication().container.shotsRepo,
+                golfstatsApplication().container.courseRepo)
         }
         initializer {
             ShotViewModel(golfstatsApplication().container.shotsRepo,
@@ -45,16 +47,14 @@ object AppViewModelProvider {
         initializer {
             StatsViewModel(golfstatsApplication().container.shotsRepo, golfstatsApplication().container.shotsavailableRepo)
         }
-        /*initializer {
+        initializer {
             CourseViewModel(golfstatsApplication().container.courseRepo)
-        }*/
+        }
         /*initializer {
             SessionsEntryViewModel(golfstatsApplication().container.sessionsRepo)
         }
 
-        initializer {
-            CourseViewModel(golfstatsApplication().container.courseRepo)
-        }
+
         initializer {
             CourseEntryViewModel(golfstatsApplication().container.courseRepo)
         }*/
