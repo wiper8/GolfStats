@@ -2,7 +2,8 @@
 Android app to collect and store multiple stats on a golf range or golf course
 
 ## TODO
-- bug de navigation vers shotssession
+- bug de navigation vers shotssession (réglé?)
+- bug boucle infinie dans range vers navig dans shotssession (probablement car query sorte plusieurs sessions et qu'à chq fois ca déclanche un event dans Composable)
 - bug query répétées en boucle dans les logs
 - débugguer les bugs créés dans range tracker
 - remettre et débugger bouton modifier course
