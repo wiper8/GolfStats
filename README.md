@@ -2,7 +2,7 @@
 Android app to collect and store multiple stats on a golf range or golf course
 
 ## TODO
-- bug range tracker resume infinite loop
+- bug range tracker shotsession infinite loop
 - range tracker modify session buf peut pas changer le nom ET save car exception validate
 - retirer les text dinfos inutiles comme session id en haut de pages
 - modifier les couleurs  pour mieux rendre visible
