@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
@@ -34,20 +35,21 @@ fun MenuScreen(navController: NavHostController, modifier: Modifier = Modifier
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(Modifier.height(13.dp))
         Button(onClick = {
             navController.navigate("yardages_graph")
         },
             modifier = modifier) {
-            Text(text = "Yardages", fontSize = 40.sp)
+            Text(text = "Yardages", fontSize = 36.sp)
         }
-        Spacer(Modifier.height(30.dp))
+        Spacer(Modifier.height(27.dp))
         Button(onClick = {
-            navController.navigate("course_graph")
+            navController.navigate("sessioncourse_graph")
         },
             modifier = modifier) {
-            Text(text="Scorecard+", fontSize = 40.sp)
+            Text(text="Scorecard+", fontSize = 36.sp)
         }
-        Spacer(Modifier.height(30.dp))
+        Spacer(Modifier.height(27.dp))
         Button(onClick = {
             navController.navigate("range_graph")
         },
@@ -55,18 +57,26 @@ fun MenuScreen(navController: NavHostController, modifier: Modifier = Modifier
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text="Range", fontSize = 40.sp)
+                Text(text="Range", fontSize = 36.sp)
                 Spacer(Modifier.height(10.dp))
-                Text(text="Tracker", fontSize = 40.sp)
+                Text(text="Tracker", fontSize = 36.sp)
             }
         }
-        Spacer(Modifier.height(30.dp))
+        Spacer(Modifier.height(27.dp))
         Button(onClick = {
             navController.navigate("stats_graph")
         },
             modifier = modifier) {
-            Text(text="Stats", fontSize = 40.sp)
+            Text(text="Stats", fontSize = 36.sp)
         }
+        Spacer(Modifier.height(13.dp))
+        Button(onClick = {
+            navController.navigate("databases_graph")
+        },
+            modifier = Modifier.height(80.dp).width(150.dp)) {
+            Text(text="Databases", fontSize = 20.sp)
+        }
+        Spacer(Modifier.height(13.dp))
     }
 }
 
@@ -93,6 +103,7 @@ fun ButtonEditDel(
         }
     }
 }
+
 
 //TODO
 /*@Composable

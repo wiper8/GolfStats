@@ -1,5 +1,6 @@
 package com.example.golfstats.ui.Shots
 
+import com.example.golfstats.data.Sessions.SessionRow
 import com.example.golfstats.data.Shots.ShotRow
 import com.example.golfstats.data.ShotsAvailable.ShotsAvailableRow
 
@@ -36,6 +37,9 @@ fun validateShotAvailable(shot: ShotsAvailableRow): Boolean {
 
 data class ShotState(
     val session_id: Int = 0,
+    val course_id: Int? = 0,
+    val hole_num: Int = 0,
+    val sessions_list: List<SessionRow> = listOf(),
     val recentShotsList: List<ShotRow> = listOf(),
     val allShotsList: List<ShotRow> = listOf(),
     val shotavailableList: List<ShotsAvailableRow> = listOf(),

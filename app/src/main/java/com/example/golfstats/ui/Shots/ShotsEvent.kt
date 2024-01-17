@@ -28,4 +28,6 @@ sealed interface ShotEvent {
     data class ClickButtonReset(val bool: Boolean): ShotEvent
     object NewAvailableShotIsPutt: ShotEvent
     data class DeleteRecordedShot(val shot: ShotRow): ShotEvent
+    data class SetHoleNum(val hole_num: Int): ShotEvent
+    data class SetCourseId(val id: Int?): ShotEvent
 }

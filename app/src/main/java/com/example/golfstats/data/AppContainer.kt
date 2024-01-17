@@ -4,6 +4,9 @@ import android.content.Context
 import com.example.golfstats.data.Course.CourseDatabase
 import com.example.golfstats.data.Course.CourseOffRepo
 import com.example.golfstats.data.Course.CourseRepo
+import com.example.golfstats.data.Holes.HolesDatabase
+import com.example.golfstats.data.Holes.HolesOffRepo
+import com.example.golfstats.data.Holes.HolesRepo
 import com.example.golfstats.data.Sessions.SessionsDatabase
 import com.example.golfstats.data.Sessions.SessionsOffRepo
 import com.example.golfstats.data.Sessions.SessionsRepo
@@ -23,6 +26,7 @@ interface AppContainer {
     val shotsRepo: ShotsRepo
     val shotsavailableRepo : ShotsAvailableRepo
     val courseRepo: CourseRepo
+    val holesRepo: HolesRepo
 }
 
 class AppDataContainer(private val context: Context) : AppContainer {
@@ -40,5 +44,8 @@ class AppDataContainer(private val context: Context) : AppContainer {
     }
     override val courseRepo: CourseRepo by lazy {
         CourseOffRepo(CourseDatabase.getDatabase(context).courseDao())
+    }
+    override val holesRepo: HolesRepo by lazy {
+        HolesOffRepo(HolesDatabase.getDatabase(context).dao())
     }
 }

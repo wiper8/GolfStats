@@ -22,6 +22,9 @@ interface SessionsDao {
     @Query("SELECT * FROM sessions_table ORDER BY id DESC")
     fun getSessions(): Flow<List<SessionRow>>
 
+    @Query("SELECT * FROM sessions_table WHERE date = :date")
+    fun getSessionIdFromDate(date: String): Flow<SessionRow>
+
     @Query("SELECT * FROM sessions_table WHERE type = 'course' ORDER BY id DESC")
     fun getCourseSessions(): Flow<List<SessionRow>>
 

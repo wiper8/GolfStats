@@ -16,12 +16,12 @@
 
 package com.example.golfstats.ui
 
-import CourseViewModel
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.golfstats.GolfStatsApplication
+import com.example.golfstats.ui.Databases.DatabasesViewModel
 import com.example.golfstats.ui.Shots.ShotViewModel
 import com.example.golfstats.ui.Sessions.SessionsViewModel
 import com.example.golfstats.ui.Sessions.StatsViewModel
@@ -38,26 +38,25 @@ object AppViewModelProvider {
         initializer {
             SessionsViewModel(golfstatsApplication().container.sessionsRepo,
                 golfstatsApplication().container.shotsRepo,
-                golfstatsApplication().container.courseRepo)
+                golfstatsApplication().container.courseRepo,
+                golfstatsApplication().container.holesRepo)
         }
         initializer {
             ShotViewModel(golfstatsApplication().container.shotsRepo,
-                golfstatsApplication().container.shotsavailableRepo)
+                golfstatsApplication().container.shotsavailableRepo,
+                golfstatsApplication().container.sessionsRepo)
         }
         initializer {
             StatsViewModel(golfstatsApplication().container.shotsRepo, golfstatsApplication().container.shotsavailableRepo)
         }
         initializer {
-            CourseViewModel(golfstatsApplication().container.courseRepo)
+            DatabasesViewModel(
+                golfstatsApplication().container.courseRepo,
+                golfstatsApplication().container.holesRepo,
+                golfstatsApplication().container.shotsRepo,
+                golfstatsApplication().container.sessionsRepo
+            )
         }
-        /*initializer {
-            SessionsEntryViewModel(golfstatsApplication().container.sessionsRepo)
-        }
-
-
-        initializer {
-            CourseEntryViewModel(golfstatsApplication().container.courseRepo)
-        }*/
     }
 }
 

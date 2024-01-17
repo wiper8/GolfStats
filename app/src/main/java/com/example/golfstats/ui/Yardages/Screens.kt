@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
@@ -29,8 +30,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.golfstats.Screens
@@ -40,19 +45,17 @@ import com.example.golfstats.ui.Shots.ShotEvent
 import com.example.golfstats.ui.check_int
 import kotlinx.coroutines.launch
 
-
 @Composable
 fun YardagesScreen(
-    navController: NavHostController
+    state: YardageState, onEvent: (YardageEvent) -> Unit = {}, navController: NavHostController,
+    newRow: YardageRow
 ) {
-    val viewModel: YardageViewModel = viewModel(factory = AppViewModelProvider.Factory)
-    val state = viewModel.state.collectAsState()
-    val onEvent = viewModel::onEvent
 
-    if(!state.value.is_new_screen_open) {
+
+    if(!state.is_new_screen_open) {
 
         Column() {
-            YardageList(yardageList = state.value.yardageList, onEvent = onEvent)
+            YardageList(yardageList = state.yardageList, onEvent = onEvent)
 
             Row {
                 Button(onClick = {
@@ -76,7 +79,7 @@ fun YardagesScreen(
         }
 
     } else {
-        NewYardageRowScreen(newRow = viewModel.newRow, onEvent = onEvent)
+        NewYardageRowScreen(newRow = newRow, onEvent = onEvent)
     }
 
 }
@@ -147,6 +150,7 @@ fun NewYardageRowScreen(
                     onEvent(YardageEvent.OnChangedninety(it.toInt()))
                     //viewModel.updateUiState(viewModel.UiState.yardageDetails.copy(ninety = it.toInt()))
                 },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                 label = {Text("90%")},
                 modifier = Modifier
                     .width(150.dp))
@@ -156,6 +160,7 @@ fun NewYardageRowScreen(
                     onEvent(YardageEvent.OnChangedhundred(it.toInt()))
                     //viewModel.updateUiState(viewModel.UiState.yardageDetails.copy(hundred = it.toInt()))
                 },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                 label = {Text("100%")},
                 modifier = Modifier
                     .width(150.dp))

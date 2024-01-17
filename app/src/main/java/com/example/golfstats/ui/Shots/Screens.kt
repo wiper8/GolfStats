@@ -55,7 +55,6 @@ fun ShotSessionScreen(
     onEvent: (ShotEvent) -> Unit,
     navController: NavHostController
 ) {
-
     if(state.value.is_add_shot_screen_open) {
 
         Column(
@@ -70,7 +69,11 @@ fun ShotSessionScreen(
                 Spacer(Modifier.height(10.dp))
                 Button(
                     onClick = {
-                        navController.popBackStack(route = Screens.Sessions.name, inclusive = false)
+                        if(state.value.course_id == -1) {
+                            navController.popBackStack(route = Screens.Menu.name, inclusive = false)
+                        } else {
+                            navController.navigateUp()
+                        }
                         onEvent(ShotEvent.DismissShot)
                     },
                     Modifier.width(120.dp).height(120.dp)
@@ -90,7 +93,6 @@ fun ShotSessionScreen(
             Spacer(modifier = Modifier.height(20.dp))
             RecentShots(state, onEvent)
         }
-        
     }
     if(state.value.is_choix_club_open) {
         ChoixBatonScreen(state, onEvent, newShotAvailable, error_gen)
@@ -108,7 +110,7 @@ fun RecentShots(state: State<ShotState>, onEvent: (ShotEvent) -> Unit, modifier:
 ) {
     LazyColumn(modifier = modifier) {
         items(items = state.value.recentShotsList, key = {it.id}) {item ->
-            if(item.session_id == state.value.session_id) {
+            if(item.session_id == state.value.session_id && item.num_hole == state.value.hole_num) {
                 ShotsItem(shot_row = item, onEvent = onEvent)
             }
         }

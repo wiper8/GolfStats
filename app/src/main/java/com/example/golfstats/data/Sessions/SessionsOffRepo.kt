@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 class SessionsOffRepo(private val dao: SessionsDao): SessionsRepo {
     override fun getSessions(): Flow<List<SessionRow>> = dao.getSessions()
+    override fun getSessionIdFromDate(date: String): Flow<SessionRow> = dao.getSessionIdFromDate(date)
     override fun getCourseSessions(): Flow<List<SessionRow>> = dao.getCourseSessions()
     override fun getRangeSessions(): Flow<List<SessionRow>> = dao.getRangeSessions()
     override fun getItem(id: Int): Flow<SessionRow?> = dao.getItem(id)

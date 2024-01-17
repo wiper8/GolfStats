@@ -1,15 +1,26 @@
 package com.example.golfstats.ui.Sessions
 
 import com.example.golfstats.data.Course.CourseRow
+import com.example.golfstats.data.Holes.HoleRow
 import com.example.golfstats.data.Sessions.SessionRow
 import com.example.golfstats.data.Shots.ShotRow
 
 data class SessionsState(
+    val session_id: Int = 0,
+    val course_id: Int = 0,
+    val total_shots: Int = 0,
+    val total_shots_under_par: Int = 0,
     val sessionsList: List<SessionRow> = listOf(),
-    val allShots: List<ShotRow> = listOf(),
     val allCourses: List<CourseRow> = listOf(),
-    //var current_row: SessionRow = SessionRow(),
-    var course_id_from_current_row: Int = 0,
+    val allHoles: List<HoleRow> = listOf(),
+    val allShots: List<ShotRow> = listOf(),
+    val scores_holes: List<Int> = listOf(),
+    val holesCurr_Course: List<HoleRow> = listOf(),
     var is_new_screen_open: Boolean = false,
-    var is_new_course_screen_open: Boolean = false
+    var is_new_course_screen_open: Boolean = false,
+    var is_card_screen_open: Boolean = false,
+    var is_settings_open: Boolean = false,
+    var is_score_total_visible: Boolean = false,
+    var are_shots_calculated: Boolean = false,
+    var is_session_id_found: Boolean = false
 )

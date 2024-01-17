@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface SessionsRepo {
     fun getSessions(): Flow<List<SessionRow>>
+    fun getSessionIdFromDate(date: String): Flow<SessionRow>
     fun getCourseSessions(): Flow<List<SessionRow>>
     fun getRangeSessions(): Flow<List<SessionRow>>
     fun getItem(id: Int): Flow<SessionRow?>
