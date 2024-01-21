@@ -3,12 +3,14 @@
 package com.example.golfstats.ui.Sessions
 
 import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -35,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -45,6 +48,7 @@ import com.example.golfstats.data.Sessions.SessionRow
 import com.example.golfstats.data.Sessions.SessionsRepo
 import com.example.golfstats.ui.AppViewModelProvider
 import com.example.golfstats.ui.ButtonEditDel
+import com.example.golfstats.ui.Course.AskRecommendationsScreen
 import com.example.golfstats.ui.Course.AvailableCourses
 import com.example.golfstats.ui.Course.CourseItem
 import com.example.golfstats.ui.Course.CourseItemRange
@@ -62,28 +66,47 @@ fun SessionsScreen(
     newCourseHoles: List<HoleRow>,
     newCourseRow: CourseRow,
     navController: NavHostController,
-    onNavClick: (Int, Int, Int) -> Unit,
+    onNavClick: (Int, Int, Int, Int) -> Unit,
+    onNavClickRecomm: (Int, Int) -> Unit,
     range_only: Boolean = true
 ) {
 
     if(range_only) {
         if(state.is_session_id_found) {
-            onEvent(SessionEvent.OffSessionIdFound)
-            onNavClick(state.session_id, -1, 0)
+            Column(
+                modifier = Modifier.fillMaxHeight().fillMaxWidth(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally) {
+                Button(onClick = { onNavClick(state.session_id, -1, 0, -1) }) {
+                    Text("Go to range", fontSize = 40.sp)
+                }
+                Spacer(Modifier.height(10.dp))
+                Button(onClick = {onEvent(SessionEvent.ExitRangeScreen)}) {
+                    Icon(Icons.Default.ArrowBack, "return", Modifier.size(40.dp))
+                }
+            }
         }
     }
 
     if(state.is_new_screen_open){
         NewSessionRowScreen(newRow = newRow, existingSessions = state.sessionsList, onEvent = onEvent, range_only = range_only, state = state, onNavClick = onNavClick)
     } else if(state.is_new_course_screen_open){
-        NewCourseRowScreen(holes_list = newCourseHoles, newRow = newCourseRow, onEvent = onEvent)
+        if(state.is_add_recommendations_screen_open) {
+            AskRecommendationsScreen(holes_list = newCourseHoles, onEvent, onNavClickRecomm)
+        } else {
+            NewCourseRowScreen(holes_list = newCourseHoles, newRow = newCourseRow, onEvent = onEvent)
+        }
     } else if(state.is_card_screen_open) {
         CourseScoreCard(state = state, onEvent = onEvent, onNavClick = onNavClick, navController = navController)
-    } else if(!state.is_new_screen_open && !state.is_new_course_screen_open && !state.is_card_screen_open) {
+    } else if(!state.is_new_screen_open && !state.is_new_course_screen_open && !state.is_card_screen_open && ((range_only && !state.is_session_id_found) || !range_only)) {
 
-        Column {
+        Column(modifier = Modifier
+            .fillMaxHeight()
+            .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally) {
             SessionsList(state, onEvent = onEvent, range_only = range_only, onNavClick = onNavClick)
             Row {
+                Spacer(Modifier.width(10.dp))
                 Button(onClick = {
                     navController.popBackStack(route = Screens.Menu.name, inclusive = false)
                 }) {
@@ -112,15 +135,16 @@ fun StatSessionsScreen(
         StatSessionsList(sessionsList = state.sessionsList,
             onEvent = onEvent, onNavClick = onNavClick)
         Row {
+            Spacer(Modifier.width(10.dp))
             Button(onClick = {
                 navController.popBackStack(route = Screens.Menu.name, inclusive = false)
             }) {
-                Icon(Icons.Default.ArrowBack, "return")
+                Icon(Icons.Default.ArrowBack, "return", modifier = Modifier.size(20.dp))
             }
             Button(onClick = {
                 onNavClick(-1)
             }) {
-                Text("All stats")
+                Text("All stats", fontSize = 20.sp)
             }
         }
     }
@@ -128,10 +152,14 @@ fun StatSessionsScreen(
 
 @Composable
 private fun SessionsList(
-    state: SessionsState, onEvent: (SessionEvent) -> Unit, range_only: Boolean, onNavClick: (Int, Int, Int) -> Unit,
+    state: SessionsState, onEvent: (SessionEvent) -> Unit, range_only: Boolean, onNavClick: (Int, Int, Int, Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    LazyColumn(modifier = modifier) {
+    LazyColumn(modifier = Modifier
+        .fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+        ) {
         items(items = state.sessionsList, key = { it.id }) { item ->
             if(range_only) {
                 if(item.type == "range") {
@@ -152,17 +180,18 @@ private fun SessionsList(
 
 @Composable
 private fun SessionItem(
-    state: SessionsState, row: SessionRow, onEvent: (SessionEvent) -> Unit, range_only: Boolean, onNavClick: (Int, Int, Int) -> Unit, modifier: Modifier = Modifier
+    state: SessionsState, row: SessionRow, onEvent: (SessionEvent) -> Unit, range_only: Boolean, onNavClick: (Int, Int, Int, Int) -> Unit, modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
     ) {
+        Spacer(Modifier.width(10.dp))
         Text(
             text = row.date,
             style = MaterialTheme.typography.titleLarge,
         )
         Spacer(Modifier.weight(1f))
-        Text(text = "ID : ${row.id}")
         Button(onClick = {
             if(range_only) {
                 onEvent(SessionEvent.ResumeSessionRange(row))
@@ -174,8 +203,6 @@ private fun SessionItem(
         }) {
             Icon(Icons.Default.PlayArrow, contentDescription = "Play")
         }
-
-
         Button(onClick = {
             onEvent(SessionEvent.Edit(row))
         }) {
@@ -208,20 +235,19 @@ private fun StatSessionItem(
     onNavClick: (Int) -> Unit, modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
     ) {
+        Spacer(Modifier.width(10.dp))
         Text(
             text = row.date,
             style = MaterialTheme.typography.titleLarge,
         )
         Spacer(Modifier.weight(1f))
-        Text(text=row.type)
-        Spacer(Modifier.weight(1f))
-        Text(text = "ID : ${row.id}")
         Button(onClick = {
             onNavClick(row.id)
         }) {
-            Text("Stats")
+            Text("Stats", fontSize = 20.sp)
         }
     }
 }
@@ -234,13 +260,15 @@ fun NewSessionRowScreen(
     onEvent: (SessionEvent) -> Unit,
     range_only: Boolean = true,
     state: SessionsState,
-    onNavClick: (Int, Int, Int) -> Unit,) {
+    onNavClick: (Int, Int, Int, Int) -> Unit,) {
     Row(modifier = Modifier
         .fillMaxHeight()
         .fillMaxWidth()) {
         Column(modifier = Modifier
             .fillMaxHeight()
             .width(150.dp)) {
+            Row {
+                Spacer(Modifier.width(10.dp))
             OutlinedTextField(
                 value = newRow.date,
                 onValueChange = {
@@ -248,12 +276,15 @@ fun NewSessionRowScreen(
                 },
                 label = { Text("Date") },
                 modifier = Modifier
-                    .width(140.dp)
-            )
-            Button(onClick = {
-                onEvent(SessionEvent.Dismiss)
-            }) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Dismiss")
+                    .width(130.dp))
+            }
+            Row {
+                Spacer(Modifier.width(10.dp))
+                Button(onClick = {
+                    onEvent(SessionEvent.Dismiss)
+                }) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Dismiss")
+                }
             }
         }
         Column(modifier = Modifier.fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -265,7 +296,7 @@ fun NewSessionRowScreen(
                 }, ) {
                     Text("Add New Course")
                 }
-                AvailableCourses(state.allCourses, existingSessions, onEvent, newRow.date)
+                AvailableCourses(state.allCourses, existingSessions, onEvent, newRow)
             }
         }
     }

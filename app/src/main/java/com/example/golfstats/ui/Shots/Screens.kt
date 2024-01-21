@@ -1,9 +1,9 @@
 package com.example.golfstats.ui.Shots
 
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -14,7 +14,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
@@ -27,22 +29,30 @@ import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.golfstats.Screens
+import com.example.golfstats.data.Recommendations.RecommendationRow
 import com.example.golfstats.data.Shots.ShotRow
 import com.example.golfstats.data.ShotsAvailable.ShotsAvailableRow
+import com.example.golfstats.ui.Recommendations.RecommendationsScreen
+import com.example.golfstats.ui.Recommendations.RecommendationsScreenShots
 import com.example.golfstats.ui.check_int
 import com.example.golfstats.ui.check_string_to_int
 
@@ -53,8 +63,10 @@ fun ShotSessionScreen(
     newShotAvailable: ShotsAvailableRow,
     error_gen: Boolean,
     onEvent: (ShotEvent) -> Unit,
-    navController: NavHostController
+    navController: NavHostController,
+    range_only: Boolean
 ) {
+
     if(state.value.is_add_shot_screen_open) {
 
         Column(
@@ -76,7 +88,9 @@ fun ShotSessionScreen(
                         }
                         onEvent(ShotEvent.DismissShot)
                     },
-                    Modifier.width(120.dp).height(120.dp)
+                    Modifier
+                        .width(120.dp)
+                        .height(120.dp)
                 ) {
                     Icon(Icons.Default.Done, "Finish", Modifier.size(50.dp))
                 }
@@ -85,13 +99,22 @@ fun ShotSessionScreen(
                     onClick = {
                         onEvent(ShotEvent.onAddShot)
                     },
-                    Modifier.width(120.dp).height(120.dp)
+                    Modifier
+                        .width(120.dp)
+                        .height(120.dp)
                 ) {
                     Icon(Icons.Default.Add, "Add Shot", Modifier.size(50.dp))
                 }
             }
             Spacer(modifier = Modifier.height(20.dp))
-            RecentShots(state, onEvent)
+            if(range_only) {
+                RecentShots(state, onEvent, 700.dp)
+            } else {
+                RecentShots(state, onEvent, 500.dp)
+            }
+
+            Spacer(modifier = Modifier.height(15.dp))
+            RecommendationsScreenShots(state.value.shotavailableList, state.value.recomm_ids, state.value.recomm_list, state.value.hole_id)
         }
     }
     if(state.value.is_choix_club_open) {
@@ -106,9 +129,11 @@ fun ShotSessionScreen(
 
 
 @Composable
-fun RecentShots(state: State<ShotState>, onEvent: (ShotEvent) -> Unit, modifier: Modifier = Modifier
+fun RecentShots(state: State<ShotState>, onEvent: (ShotEvent) -> Unit, height: Dp = 500.dp, modifier: Modifier = Modifier
 ) {
-    LazyColumn(modifier = modifier) {
+    LazyColumn(modifier = modifier
+        .height(height)
+        .fillMaxHeight()) {
         items(items = state.value.recentShotsList, key = {it.id}) {item ->
             if(item.session_id == state.value.session_id && item.num_hole == state.value.hole_num) {
                 ShotsItem(shot_row = item, onEvent = onEvent)
@@ -118,14 +143,20 @@ fun RecentShots(state: State<ShotState>, onEvent: (ShotEvent) -> Unit, modifier:
 }
 
 
+
+
 @Composable
 private fun ShotsItem(
     shot_row: ShotRow, onEvent: (ShotEvent) -> Unit, modifier: Modifier = Modifier
 ) {
     if(shot_row.is_putt) {
-        Row {
-            Text(" " + shot_row.success.toString() + " putt")
+        Row(horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically) {
             Spacer(modifier = Modifier.width(10.dp))
+            Text(shot_row.shot)
+            Spacer(modifier = Modifier.weight(1f))
+            Text(" " + shot_row.success.toString() + " putt")
+            Spacer(modifier = Modifier.weight(1f))
             Button(onClick = {
                 onEvent(ShotEvent.DeleteRecordedShot(shot_row))
             }) {
@@ -134,13 +165,17 @@ private fun ShotsItem(
         }
         Spacer(modifier = Modifier.height(16.dp))
     } else {
-        Row {
-            Text(text = shot_row.shot)
+        Row(horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically) {
             Spacer(modifier = Modifier.width(10.dp))
-            Column {
+            Text(text = shot_row.shot)
+            Spacer(modifier = Modifier.weight(1f))
+            Text(text = " ${if(shot_row.success == 2) "succès" else if(shot_row.success == 1) "succès?" else "échec"} ${if(shot_row.green == 2) "green" else if(shot_row.green == 1) "green?" else ""}" + " ${if(shot_row.penalty == 2) "pénalité" else if(shot_row.penalty == 1) "pénalité?" else  ""}" + " ${if(shot_row.reset == 2) "reset" else if(shot_row.reset == 1) "reset?" else ""}")
+            Spacer(modifier = Modifier.weight(1f))
+            /*Column {
                 Text(text = " success : " + shot_row.success.toString() + " green : " + shot_row.green.toString())
                 Text(text = " penalty : " + shot_row.penalty.toString() + " reset : " + shot_row.reset.toString())
-            }
+            }*/
             Button(onClick = {
                 onEvent(ShotEvent.DeleteRecordedShot(shot_row))
             }) {
@@ -171,7 +206,9 @@ fun ChoixBatonScreen(state: State<ShotState>, onEvent: (ShotEvent) -> Unit,
                             Button(onClick = {
                                 onEvent(ShotEvent.onEditExistingShotAvailable(item))
                             },
-                                Modifier.height(80.dp).width(120.dp)) {
+                                Modifier
+                                    .height(80.dp)
+                                    .width(120.dp)) {
                                 Text(item.shot, fontSize=20.sp)
                                 Icon(Icons.Default.Edit,  "Edit")
                             }
@@ -187,7 +224,9 @@ fun ChoixBatonScreen(state: State<ShotState>, onEvent: (ShotEvent) -> Unit,
                             Button(onClick = {
                                 onEvent(ShotEvent.OnChooseShot(item.shot))
                             },
-                                Modifier.height(80.dp).width(120.dp)) {
+                                Modifier
+                                    .height(80.dp)
+                                    .width(120.dp)) {
                                 Text(item.shot, fontSize=20.sp)
                             }
                             Spacer(Modifier.height(10.dp))
@@ -399,7 +438,9 @@ fun PuttScreen(onEvent: (ShotEvent) -> Unit) {
             Button(onClick = {
                 onEvent(ShotEvent.OnChangedputt(n))
             },
-                Modifier.width(130.dp).height(130.dp)) {
+                Modifier
+                    .width(130.dp)
+                    .height(130.dp)) {
                 Text(n.toString(), fontSize = 60.sp)
             }
         }
@@ -437,7 +478,8 @@ fun CheckScreen(state: State<ShotState>, onEvent: (ShotEvent) -> Unit) {
                 onEvent, ShotEvent::OnChangedpenalty,
                 Modifier
                     .height(180.dp)
-                    .width(300.dp)
+                    .width(300.dp),
+                good = false
             )
         }
         if (state.value.is_reset_open) {
@@ -446,7 +488,8 @@ fun CheckScreen(state: State<ShotState>, onEvent: (ShotEvent) -> Unit) {
                 onEvent, ShotEvent::OnChangedreset,
                 Modifier
                     .height(180.dp)
-                    .width(300.dp)
+                    .width(300.dp),
+                good = false
             )
         }
         if (state.value.is_success_open || state.value.is_green_open || state.value.is_penalty_open || state.value.is_reset_open) {
@@ -465,7 +508,7 @@ fun CheckScreen(state: State<ShotState>, onEvent: (ShotEvent) -> Unit) {
 }
 
 @Composable
-fun CheckBody(nom: String, onEvent: (ShotEvent) -> Unit, event: (Int) -> ShotEvent, modifier: Modifier) {
+fun CheckBody(nom: String, onEvent: (ShotEvent) -> Unit, event: (Int) -> ShotEvent, modifier: Modifier, good: Boolean = true) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -474,26 +517,31 @@ fun CheckBody(nom: String, onEvent: (ShotEvent) -> Unit, event: (Int) -> ShotEve
         Spacer(modifier = Modifier.height(20.dp))
         Button(
             onClick = {onEvent(event(2))},
-            modifier = modifier
+            modifier = modifier,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if(good) Color.Green else Color.Red
+            )
         ) {
             Icon(Icons.Default.Done, "Yes",
                 modifier = Modifier.size(60.dp))
         }
         Spacer(modifier = Modifier.height(20.dp))
-        Button(onClick = {
-            onEvent(event(1))
-        },
-            modifier = modifier) {
+        Button(onClick = {onEvent(event(1))},
+            modifier = modifier,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Yellow
+            )) {
             Text(text="?", fontSize=60.sp)
             //TODO ajouter l'icône téléchargé du point d'interrogation. question_mark-24
             //val imageView: ImageView = findViewById(R.id.custom_icon)
             //imageView.setImageResource(R.drawable.ic_custom_icon)
         }
         Spacer(modifier = Modifier.height(20.dp))
-        Button(onClick = {
-            onEvent(event(0))
-        },
-            modifier = modifier) {
+        Button(onClick = {onEvent(event(0))},
+            modifier = modifier,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if(good) Color.Red else Color.Green
+            )) {
             Icon(Icons.Default.Close, "No",
                 modifier = Modifier.size(60.dp))
         }

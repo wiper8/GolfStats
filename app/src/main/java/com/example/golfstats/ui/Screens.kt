@@ -44,7 +44,7 @@ fun MenuScreen(navController: NavHostController, modifier: Modifier = Modifier
         }
         Spacer(Modifier.height(27.dp))
         Button(onClick = {
-            navController.navigate("sessioncourse_graph")
+            navController.navigate("course_graph")
         },
             modifier = modifier) {
             Text(text="Scorecard+", fontSize = 36.sp)

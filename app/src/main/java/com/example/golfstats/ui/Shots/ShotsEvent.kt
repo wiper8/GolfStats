@@ -30,4 +30,5 @@ sealed interface ShotEvent {
     data class DeleteRecordedShot(val shot: ShotRow): ShotEvent
     data class SetHoleNum(val hole_num: Int): ShotEvent
     data class SetCourseId(val id: Int?): ShotEvent
+    data class SetHoleId(val id: Int?): ShotEvent
 }

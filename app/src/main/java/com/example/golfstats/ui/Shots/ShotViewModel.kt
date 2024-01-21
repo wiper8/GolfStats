@@ -1,11 +1,11 @@
 package com.example.golfstats.ui.Shots
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.golfstats.data.Recommendations.RecommendationsRepo
 import com.example.golfstats.data.Sessions.SessionsRepo
 import com.example.golfstats.data.Shots.ShotRow
 import com.example.golfstats.data.ShotsAvailable.ShotsAvailableRepo
@@ -21,7 +21,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 
-class ShotViewModel(val shotsRepo: ShotsRepo, val shotavailableRepo: ShotsAvailableRepo, val sessionsRepo: SessionsRepo) : ViewModel() {
+class ShotViewModel(val shotsRepo: ShotsRepo, val shotavailableRepo: ShotsAvailableRepo,
+                    val sessionsRepo: SessionsRepo, val recommendationsRepo: RecommendationsRepo) : ViewModel() {
 
     private val _state = MutableStateFlow(ShotState())
 
@@ -29,12 +30,14 @@ class ShotViewModel(val shotsRepo: ShotsRepo, val shotavailableRepo: ShotsAvaila
         _state,
         shotsRepo.getShots(),
         shotavailableRepo.getShots(),
-        sessionsRepo.getSessions()
-        ) { state, shotList, shotavailableList, sessions_list ->
+        sessionsRepo.getSessions(),
+        recommendationsRepo.getRecommendations()
+        ) { state, shotList, shotavailableList, sessions_list, recomm_list ->
         state.copy(
             recentShotsList = shotList,
             shotavailableList = shotavailableList,
-            sessions_list = sessions_list
+            sessions_list = sessions_list,
+            recomm_list = recomm_list
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), ShotState())
 
@@ -137,7 +140,6 @@ class ShotViewModel(val shotsRepo: ShotsRepo, val shotavailableRepo: ShotsAvaila
             is ShotEvent.DeleteShotAvailable -> {
                 viewModelScope.launch {
                     shotavailableRepo.delete(event.shotavailable)
-                    delay(300L) // Animation delay
                 }
                 viewModelScope.launch {
                     _state.update {
@@ -323,6 +325,13 @@ class ShotViewModel(val shotsRepo: ShotsRepo, val shotavailableRepo: ShotsAvaila
                 _state.update {
                     it.copy(
                         course_id = event.id
+                    )
+                }
+            }
+            is ShotEvent.SetHoleId -> {
+                _state.update {
+                    it.copy(
+                        hole_id = event.id
                     )
                 }
             }

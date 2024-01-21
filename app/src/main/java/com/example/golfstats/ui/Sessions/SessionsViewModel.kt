@@ -11,6 +11,7 @@ import com.example.golfstats.data.Course.CourseRepo
 import com.example.golfstats.data.Course.CourseRow
 import com.example.golfstats.data.Holes.HoleRow
 import com.example.golfstats.data.Holes.HolesRepo
+import com.example.golfstats.data.Recommendations.RecommendationsRepo
 import com.example.golfstats.data.Sessions.SessionRow
 import com.example.golfstats.data.Sessions.SessionsRepo
 import com.example.golfstats.data.Shots.ShotsRepo
@@ -22,7 +23,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class SessionsViewModel(val sessionsRepo: SessionsRepo, val shotsRepo: ShotsRepo, val courseRepo: CourseRepo, val holesRepo: HolesRepo) : ViewModel() {
+class SessionsViewModel(val sessionsRepo: SessionsRepo, val shotsRepo: ShotsRepo,
+                        val courseRepo: CourseRepo, val holesRepo: HolesRepo) : ViewModel() {
 
     private val _state = MutableStateFlow(SessionsState())
 
@@ -141,13 +143,22 @@ class SessionsViewModel(val sessionsRepo: SessionsRepo, val shotsRepo: ShotsRepo
                                 _state.update {
                                     it.copy(
                                         session_id = l.id,
-                                        is_session_id_found = true
+                                        is_session_id_found = true,
+                                        is_new_screen_open = false
                                     )
                                 }
                                 cancel()
                             }
                         }
                     }
+                }
+            }
+            SessionEvent.ExitRangeScreen -> {
+                _state.update {
+                    it.copy(
+                        is_session_id_found = false,
+                        is_new_screen_open = false
+                    )
                 }
             }
             is SessionEvent.ResumeSession -> {
@@ -179,18 +190,12 @@ class SessionsViewModel(val sessionsRepo: SessionsRepo, val shotsRepo: ShotsRepo
                         _state.update {
                             it.copy(
                                 session_id = l.id,
-                                is_session_id_found = true
+                                is_session_id_found = true,
+                                is_new_screen_open = false
                             )
                         }
                         cancel()
                     }
-                }
-            }
-            SessionEvent.OffSessionIdFound -> {
-                _state.update {
-                    it.copy(
-                        is_session_id_found = false
-                    )
                 }
             }
             is SessionEvent.Edit -> {
@@ -277,12 +282,12 @@ class SessionsViewModel(val sessionsRepo: SessionsRepo, val shotsRepo: ShotsRepo
                 viewModelScope.launch {
                     newCourseRow?.let { row ->
                         if (validateCourseInput(row) && validateCourseHoles(newCourseHoles)) {
-                            _state.update {
+                            /*_state.update {
                                 it.copy(
                                     is_new_screen_open = true,
                                     is_new_course_screen_open = false
                                 )
-                            }
+                            }*/
                             courseRepo.upsert(row)
 
                             courseRepo.getCoursefromNom(row.nom).collect { l ->
@@ -304,14 +309,37 @@ class SessionsViewModel(val sessionsRepo: SessionsRepo, val shotsRepo: ShotsRepo
                                     )
                                 }
 
-                                newCourseRow = CourseRow()
-                                newCourseHoles.clear()
+                                courseRepo.getCoursefromNom(newCourseRow.nom).collect { l ->
 
-                                cancel()
+                                    val id = l!!.id
+                                    holesRepo.getCourseHoles(id).collect { l ->
+                                        l.forEachIndexed {i, e ->
+                                            newCourseHoles[i] = e
+                                        }
+                                        _state.update {
+                                            it.copy(
+                                                is_add_recommendations_screen_open = true
+                                            )
+                                        }
+                                        cancel()
+                                    }
+
+                                }
                             }
                         }
                     }
                 }
+            }
+            SessionEvent.SaveRecomm -> {
+                _state.update {
+                    it.copy(
+                        is_add_recommendations_screen_open = false,
+                        is_new_screen_open = true,
+                        is_new_course_screen_open = false
+                    )
+                }
+                newCourseRow = CourseRow()
+                newCourseHoles.clear()
             }
 
             is SessionEvent.PlayCourse -> {
@@ -384,8 +412,12 @@ class SessionsViewModel(val sessionsRepo: SessionsRepo, val shotsRepo: ShotsRepo
                                     shotsRepo.getSessionShots(event.session_id).collect { l ->
                                         for (hole_i in nombres_coups.indices) {
                                             for (i in l.indices) {
-                                                if(l[i].num_hole-1 == hole_i) nombres_coups[hole_i]++
-                                                if(l[i].num_hole-1 == hole_i && l[i].penalty == 2) nombres_coups[hole_i]++
+                                                if(l[i].is_putt && l[i].num_hole-1 == hole_i) {
+                                                    nombres_coups[hole_i] = nombres_coups[hole_i] + l[i].success
+                                                } else {
+                                                    if(l[i].num_hole-1 == hole_i) nombres_coups[hole_i]++
+                                                    if(l[i].num_hole-1 == hole_i && l[i].penalty == 2) nombres_coups[hole_i]++
+                                                }
                                             }
                                             total_shots_ = total_shots_ + nombres_coups[hole_i]
                                             if(nombres_coups[hole_i] > 0) {

@@ -74,11 +74,11 @@ import com.example.golfstats.ui.check_string_to_int
 @Composable
 fun AvailableCourses(
     coursesList: List<CourseRow>, existingSessions: List<SessionRow>, onEvent: (SessionEvent) -> Unit,
-    session_date: String
+    session: SessionRow
 ) {
-    LazyColumn() {
+    LazyColumn(Modifier.fillMaxWidth()) {
         itemsIndexed(items = coursesList) { index, item ->
-            CourseItem(row = item, existingSessions, onEvent, session_date)
+            CourseItem(row = item, existingSessions, onEvent, session)
         }
     }
 }
@@ -86,36 +86,43 @@ fun AvailableCourses(
 @Composable
 fun CourseItem(
     row: CourseRow, existingSessions: List<SessionRow>, onEvent: (SessionEvent) -> Unit,
-    session_date: String, modifier: Modifier = Modifier,
+    session: SessionRow, modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = row.nom,
             style = MaterialTheme.typography.titleLarge,
         )
         Spacer(Modifier.weight(1f))
-        Text(text = row.holes.toString())
+        Text(text = "${row.holes.toString()}\ntrous ")
         var ok = true
         for(session_row in existingSessions) {
-            ok = ok && session_date != session_row.date
+            if(session.id != session_row.id) {
+                ok = ok && session.date != session_row.date
+            }
             if(!ok) break
         }
-        if(session_date != "" && session_date != "range" && ok) {
+        if(session.date != "" && session.date != "range" && ok) {
             Button(
                 onClick = {
                     onEvent(SessionEvent.SetSessionTypeCourse)
                     onEvent(SessionEvent.PlayCourse(row.id))
                     onEvent(SessionEvent.SaveSession)
                 },
-                modifier = Modifier.width(75.dp).height(60.dp)
+                modifier = Modifier
+                    .width(75.dp)
+                    .height(60.dp)
             ) {
                 Icon(Icons.Default.PlayArrow, contentDescription = "Play")
             }
         } else {
             FilledTonalButton(onClick = {},
-                modifier = Modifier.width(75.dp).height(60.dp)) {
+                modifier = Modifier
+                    .width(75.dp)
+                    .height(60.dp)) {
                 Icon(Icons.Default.PlayArrow, contentDescription = "Play")
             }
         }
@@ -128,7 +135,9 @@ fun CourseItem(
         //}
         Button(onClick = {
             onEvent(SessionEvent.DeleteCourse(row))
-        }, modifier =  Modifier.width(75.dp).height(60.dp)) {
+        }, modifier = Modifier
+            .width(75.dp)
+            .height(60.dp)) {
             Icon(Icons.Default.Delete, contentDescription = "Delete")
         }
     }
@@ -137,11 +146,10 @@ fun CourseItem(
 @Composable
 fun CourseItemRange(
     state: SessionsState, session_row: SessionRow, existingSessions: List<SessionRow>, onEvent: (SessionEvent) -> Unit,
-    session_date: String, onNavClick: (Int, Int, Int) -> Unit, modifier: Modifier = Modifier,
+    session_date: String, onNavClick: (Int, Int, Int, Int) -> Unit, modifier: Modifier = Modifier,
 ) {
     if(state.is_session_id_found) {
-        onEvent(SessionEvent.OffSessionIdFound)
-        onNavClick(state.session_id, -1, 0)
+        onNavClick(state.session_id, -1, 0, -1)
     }
     Row(
         modifier = Modifier.fillMaxWidth()
@@ -246,17 +254,22 @@ fun NewCourseRowScreen(
             if(newRow.nom != "") {
                 Button(
                     onClick = {onEvent(SessionEvent.SaveCourse)},
-                    modifier = Modifier.width(70.dp).height(70.dp)
+                    modifier = Modifier
+                        .width(70.dp)
+                        .height(70.dp)
                 ) {
                     Icon(Icons.Default.Done, "Save", Modifier.size(60.dp))
                 }
             } else {
                 FilledTonalButton(onClick = {},
-                    modifier = Modifier.width(70.dp).height(70.dp)) {
+                    modifier = Modifier
+                        .width(70.dp)
+                        .height(70.dp)) {
                     Icon(Icons.Default.Done, "Save", Modifier.size(60.dp))
                 }
             }
         }
+        Spacer(Modifier.width(3.dp))
         Column {
             LazyHorizontalGrid(
                 rows = GridCells.Fixed(9),
@@ -265,7 +278,7 @@ fun NewCourseRowScreen(
             ) {
                 items(items = (1..newRow.holes).toList()) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Row {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(it.toString(), fontSize=20.sp)
                             OutlinedTextField(
                                 value = check_int(holes_list.get(it-1).par),
@@ -299,39 +312,99 @@ fun NewCourseRowScreen(
 }
 
 @Composable
+fun AskRecommendationsScreen(
+    holes_list: List<HoleRow>,
+    onEvent: (SessionEvent) -> Unit,
+    onNavClickRecomm: (Int, Int) -> Unit,
+) {
+
+    Column(modifier = Modifier.fillMaxHeight().fillMaxWidth(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally) {
+        LazyHorizontalGrid(
+            rows = GridCells.Fixed(9),
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxHeight(0.8f)
+
+        ) {
+            items(items = (1..holes_list.size).toList()) {
+                Row {
+                    Column(modifier = Modifier.fillMaxHeight()) {
+                        Button(
+                            onClick = {
+                                onNavClickRecomm(
+                                    holes_list[it - 1].numero,
+                                    holes_list[it - 1].id
+                                )
+                            },
+                            modifier = Modifier.width(90.dp).fillMaxHeight(0.9f)
+                        ) {
+                            Text(it.toString(), fontSize = 20.sp)
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(10.dp))
+                }
+            }
+        }
+        Button(onClick = {onEvent(SessionEvent.SaveRecomm)}) {
+            Text("Save", fontSize = 20.sp)
+        }
+    }
+}
+
+@Composable
 fun CourseScoreCard(
     state: SessionsState,
     onEvent: (SessionEvent) -> Unit,
-    onNavClick: (Int, Int, Int) -> Unit,
+    onNavClick: (Int, Int, Int, Int) -> Unit,
     navController: NavHostController
 ) {
     if(state.is_settings_open) {
         SettingsScreen(onEvent)
     } else {
-        Column {
-            Row {
+        Column(
+            modifier = Modifier.fillMaxHeight().fillMaxWidth(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically) {
                 if (state.is_score_total_visible) {
-                    Text("Total : ${state.total_shots} (${if(state.total_shots_under_par>0) "+" else ""}${state.total_shots_under_par})")
+                    Text("Total : ${state.total_shots} (${if(state.total_shots_under_par>0) "+" else ""}${state.total_shots_under_par})", fontSize = 20.sp)
                 } else {
-                    Text("Total : ? (?)")
+                    Text("Total : ? (?)", fontSize = 20.sp)
                 }
-                Spacer(modifier = Modifier.width(30.dp))
+                Spacer(modifier = Modifier.width(60.dp))
                 Button(onClick = {
                     onEvent(SessionEvent.ExitCard)
                     navController.navigateUp()
                 }) {
                     Icon(Icons.Default.ArrowBack, "return", Modifier.size(30.dp))
                 }
-                Spacer(modifier = Modifier.width(70.dp))
+                Spacer(modifier = Modifier.width(60.dp))
                 Button(onClick = { onEvent(SessionEvent.Settings) }) {
                     Icon(Icons.Default.Settings, "Settings", Modifier.size(40.dp))
                 }
             }
+            Row(modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically) {
+                Button(onClick = {},
+                    modifier = Modifier.width(90.dp).height(60.dp)
+                ) {
+                    Text("Trou", fontSize = 20.sp)
+                }
+                Text(" Coups ") // nb de coups
+                Text(" Par ") // Par
+                Text(" Yards") // Yards
+                Spacer(modifier = Modifier.width(5.dp))
+            }
+            Spacer(modifier = Modifier.height(5.dp))
 
-            /*
-            LazyHorizontalGrid(
+
+            /*LazyHorizontalGrid(
                 rows = GridCells.Fixed(1),
-                verticalArrangement = Arrangement.Center,
                 horizontalArrangement = Arrangement.Center
             ) {
                 items(items = List(2) { it + 1 }) {
@@ -342,8 +415,8 @@ fun CourseScoreCard(
                         Text("Yards")
                     }
                 }
-            }
-            */
+            }*/
+
 
             onEvent(SessionEvent.CalculateScores(state.session_id))
 
@@ -353,24 +426,27 @@ fun CourseScoreCard(
                     horizontalArrangement = Arrangement.Center
                 ) {
                     itemsIndexed(items = state.holesCurr_Course) { i, it ->
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Row(
+                        Column(modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally) {
+                            Row(modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Button(
                                     onClick = {
-                                        onNavClick(state.session_id, it.course_id, it.numero)
+                                        onNavClick(state.session_id, it.course_id, it.numero, it.id)
                                     },
                                     Modifier
-                                        .width(60.dp)
+                                        .width(80.dp)
                                         .height(60.dp)
                                 ) {
                                     Text(it.numero.toString(), fontSize = 20.sp)
                                 }
-                                Text("${state.scores_holes[i]}") // nb de coups
-                                Text(check_int(it.par)) // Par
-                                Text(check_int(it.yards)) // Yards
-                                Spacer(modifier = Modifier.width(5.dp))
+                                Text(" ${state.scores_holes[i]} ") // nb de coups
+                                Text(" ${check_int(it.par)} " ) // Par
+                                Text(" ${check_int(it.yards)} ") // Yards
+                                Spacer(modifier = Modifier.width(20.dp))
                             }
                         }
                     }
@@ -384,18 +460,24 @@ fun CourseScoreCard(
 fun SettingsScreen(
     onEvent: (SessionEvent) -> Unit
 ) {
-    Column {
-        Text("Show total score and progress?")
+    Column(modifier = Modifier.fillMaxHeight().fillMaxWidth(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Show total score and progress?", fontSize=20.sp)
+
+        Spacer(Modifier.height(10.dp))
         Row {
             Button(onClick = {
                 onEvent(SessionEvent.SetSettings(true))
-            }) {
-                Text("Yes")
+            }, Modifier.width(120.dp).height(80.dp)) {
+                Text("Yes", fontSize=30.sp)
             }
+            Spacer(Modifier.width(10.dp))
             Button(onClick = {
                 onEvent(SessionEvent.SetSettings(false))
-            }) {
-                Text("No")
+            }, Modifier.width(120.dp).height(80.dp)) {
+                Text("No", fontSize=30.sp)
             }
         }
     }

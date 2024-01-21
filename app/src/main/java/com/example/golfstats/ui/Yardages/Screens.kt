@@ -1,5 +1,6 @@
 package com.example.golfstats.ui.Yardages
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -29,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -55,9 +57,22 @@ fun YardagesScreen(
     if(!state.is_new_screen_open) {
 
         Column() {
+            Row(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "Coups",
+                    style = MaterialTheme.typography.titleLarge,
+                )
+                Spacer(Modifier.weight(1f))
+                Text(text = "90%")
+                Spacer(Modifier.weight(1f))
+                Text(text = "100%")
+                Spacer(Modifier.weight(1f))
+            }
             YardageList(yardageList = state.yardageList, onEvent = onEvent)
 
-            Row {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Button(onClick = {
                     navController.popBackStack(route = Screens.Yardages.name, inclusive = true)
                 }) {
@@ -100,7 +115,9 @@ private fun YardageItem(
     yardagerow: YardageRow, onEvent: (YardageEvent) -> Unit, modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = yardagerow.baton,

@@ -20,6 +20,7 @@ sealed interface SessionEvent {
     data class OnChangePar(val hole: Int, val num: Int): SessionEvent
     data class OnChangeYards(val hole: Int, val num: Int): SessionEvent
     object SaveCourse: SessionEvent
+    object SaveRecomm: SessionEvent
     data class PlayCourse(val course_id: Int): SessionEvent
     data class EditCourse(val row: CourseRow): SessionEvent
     data class DeleteCourse(val row: CourseRow): SessionEvent
@@ -30,5 +31,5 @@ sealed interface SessionEvent {
     data class ResumeSession(val sessionRow: SessionRow): SessionEvent
     data class ResumeSessionRange(val sessionRow: SessionRow): SessionEvent
     object ExitCard: SessionEvent
-    object OffSessionIdFound: SessionEvent
+    object ExitRangeScreen: SessionEvent
 }

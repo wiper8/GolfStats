@@ -7,6 +7,9 @@ import com.example.golfstats.data.Course.CourseRepo
 import com.example.golfstats.data.Holes.HolesDatabase
 import com.example.golfstats.data.Holes.HolesOffRepo
 import com.example.golfstats.data.Holes.HolesRepo
+import com.example.golfstats.data.Recommendations.RecommendationsDatabase
+import com.example.golfstats.data.Recommendations.RecommendationsOffRepo
+import com.example.golfstats.data.Recommendations.RecommendationsRepo
 import com.example.golfstats.data.Sessions.SessionsDatabase
 import com.example.golfstats.data.Sessions.SessionsOffRepo
 import com.example.golfstats.data.Sessions.SessionsRepo
@@ -27,6 +30,7 @@ interface AppContainer {
     val shotsavailableRepo : ShotsAvailableRepo
     val courseRepo: CourseRepo
     val holesRepo: HolesRepo
+    val recommendationsRepo: RecommendationsRepo
 }
 
 class AppDataContainer(private val context: Context) : AppContainer {
@@ -47,5 +51,8 @@ class AppDataContainer(private val context: Context) : AppContainer {
     }
     override val holesRepo: HolesRepo by lazy {
         HolesOffRepo(HolesDatabase.getDatabase(context).dao())
+    }
+    override val recommendationsRepo: RecommendationsRepo by lazy {
+        RecommendationsOffRepo(RecommendationsDatabase.getDatabase(context).recommendationsDao())
     }
 }

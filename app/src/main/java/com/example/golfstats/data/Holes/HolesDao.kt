@@ -18,7 +18,7 @@ interface HolesDao {
     @Query("DELETE FROM holes WHERE course_id = :course_id")
     suspend fun deleteHolesFromCourse(course_id: Int)
 
-    @Query("SELECT * FROM holes ORDER BY id DESC")
+    @Query("SELECT * FROM holes ORDER BY course_id, numero DESC")
     fun getHoles(): Flow<List<HoleRow>>
 
     @Query("SELECT * FROM holes WHERE course_id = :course_id ORDER BY numero")

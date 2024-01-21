@@ -1,5 +1,6 @@
 package com.example.golfstats.ui.Shots
 
+import com.example.golfstats.data.Recommendations.RecommendationRow
 import com.example.golfstats.data.Sessions.SessionRow
 import com.example.golfstats.data.Shots.ShotRow
 import com.example.golfstats.data.ShotsAvailable.ShotsAvailableRow
@@ -39,10 +40,13 @@ data class ShotState(
     val session_id: Int = 0,
     val course_id: Int? = 0,
     val hole_num: Int = 0,
+    val hole_id: Int? = 0,
     val sessions_list: List<SessionRow> = listOf(),
     val recentShotsList: List<ShotRow> = listOf(),
     val allShotsList: List<ShotRow> = listOf(),
     val shotavailableList: List<ShotsAvailableRow> = listOf(),
+    val recomm_list: List<RecommendationRow> = listOf(),
+    val recomm_ids: List<Int> = listOf(),
     var current_row: ShotRow = ShotRow(session_id = session_id),
     var is_add_shot_screen_open: Boolean = true,
     var is_choix_club_open: Boolean = false,
