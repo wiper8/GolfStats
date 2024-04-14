@@ -49,7 +49,6 @@ class SessionsViewModel(val sessionsRepo: SessionsRepo, val shotsRepo: ShotsRepo
         private set
     var current_selected_course: CourseRow by mutableStateOf(CourseRow())
         private set
-
     var newCourseHoles = mutableStateListOf<HoleRow>()
         private set
 
@@ -253,13 +252,57 @@ class SessionsViewModel(val sessionsRepo: SessionsRepo, val shotsRepo: ShotsRepo
                     )
                 }
             }
-            is SessionEvent.EditCourse -> {
-                _state.update {
-                    it.copy(
-                        is_new_course_screen_open = true,
-                        is_new_screen_open = false
-                    )
+
+            SessionEvent.SaveCourse -> {
+
+                viewModelScope.launch {
+                    newCourseRow?.let { row ->
+                        if (validateCourseInput(row) && validateCourseHoles(newCourseHoles)) {
+
+                            courseRepo.upsert(row)
+
+                            courseRepo.getCoursefromNom(row.nom).collect { l ->
+
+                                val id = l!!.id
+                                newCourseHoles.forEachIndexed { i, e ->
+                                    holesRepo.upsert(
+                                        HoleRow(
+                                            course_id = id,
+                                            numero = e.numero,
+                                            yards = e.yards,
+                                            par = e.par,
+                                            mypar = e.mypar,
+                                            myhandicap = e.myhandicap,
+                                            plan = e.plan,
+                                            plan_safe = e.plan_safe,
+                                            plan_me = e.plan_me
+                                        )
+                                    )
+                                }
+
+                                courseRepo.getCoursefromNom(newCourseRow.nom).collect { l ->
+
+                                    val id = l!!.id
+                                    holesRepo.getCourseHoles(id).collect { l ->
+                                        l.forEachIndexed {i, e ->
+                                            newCourseHoles[i] = e
+                                        }
+                                        _state.update {
+                                            it.copy(
+                                                is_add_recommendations_screen_open = true
+                                            )
+                                        }
+                                        cancel()
+                                    }
+
+                                }
+                            }
+                        }
+                    }
                 }
+            }
+
+            is SessionEvent.EditCourse -> {
 
                 newCourseRow = event.row
                 newCourseHoles.clear()
@@ -269,6 +312,15 @@ class SessionsViewModel(val sessionsRepo: SessionsRepo, val shotsRepo: ShotsRepo
                         for (i in l.indices) {
                             newCourseHoles.add(l[i])
                         }
+
+                        _state.update {
+                            it.copy(
+                                is_new_course_screen_open = true,
+                                is_new_screen_open = false
+                            )
+                        }
+                        cancel()
+
                     }
                 }
             }

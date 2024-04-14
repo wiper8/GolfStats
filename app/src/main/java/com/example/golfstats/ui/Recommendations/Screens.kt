@@ -33,6 +33,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -112,7 +113,10 @@ fun RecommendationsCreationScreen(
                     label = { Text("Expectency")},
                     modifier = Modifier
                         .width(110.dp)
-                        .height(80.dp)
+                        .height(80.dp),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        textColor = Color.DarkGray
+                    )
                 )
                 Text(".")
                 OutlinedTextField(
@@ -124,7 +128,10 @@ fun RecommendationsCreationScreen(
                     label = { Text("Float")},
                     modifier = Modifier
                         .width(110.dp)
-                        .height(80.dp)
+                        .height(80.dp),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        textColor = Color.DarkGray
+                    )
                 )
             }
             Spacer(Modifier.height(20.dp))

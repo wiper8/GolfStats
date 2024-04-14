@@ -26,12 +26,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -159,7 +161,10 @@ fun NewYardageRowScreen(
                 },
                 label = {Text("Bâton")},
                 modifier = Modifier
-                    .width(150.dp)
+                    .width(150.dp),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    textColor = Color.DarkGray
+                )
             )
             OutlinedTextField(
                 value = check_int(newRow.ninety),
@@ -170,7 +175,10 @@ fun NewYardageRowScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                 label = {Text("90%")},
                 modifier = Modifier
-                    .width(150.dp))
+                    .width(150.dp),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    textColor = Color.DarkGray
+                ))
             OutlinedTextField(
                 value = check_int(newRow.hundred),
                 onValueChange = {
@@ -180,7 +188,10 @@ fun NewYardageRowScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                 label = {Text("100%")},
                 modifier = Modifier
-                    .width(150.dp))
+                    .width(150.dp),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    textColor = Color.DarkGray
+                ))
         }
         Row {
             Button(onClick = {

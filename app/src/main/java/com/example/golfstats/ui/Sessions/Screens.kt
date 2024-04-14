@@ -30,11 +30,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -45,9 +47,6 @@ import com.example.golfstats.Screens
 import com.example.golfstats.data.Course.CourseRow
 import com.example.golfstats.data.Holes.HoleRow
 import com.example.golfstats.data.Sessions.SessionRow
-import com.example.golfstats.data.Sessions.SessionsRepo
-import com.example.golfstats.ui.AppViewModelProvider
-import com.example.golfstats.ui.ButtonEditDel
 import com.example.golfstats.ui.Course.AskRecommendationsScreen
 import com.example.golfstats.ui.Course.AvailableCourses
 import com.example.golfstats.ui.Course.CourseItem
@@ -94,7 +93,7 @@ fun SessionsScreen(
         if(state.is_add_recommendations_screen_open) {
             AskRecommendationsScreen(holes_list = newCourseHoles, onEvent, onNavClickRecomm)
         } else {
-            NewCourseRowScreen(holes_list = newCourseHoles, newRow = newCourseRow, onEvent = onEvent)
+            NewCourseRowScreen(holes_list = newCourseHoles, newRow = newCourseRow, allCourses = state.allCourses, onEvent = onEvent)
         }
     } else if(state.is_card_screen_open) {
         CourseScoreCard(state = state, onEvent = onEvent, onNavClick = onNavClick, navController = navController)
@@ -202,12 +201,12 @@ private fun SessionItem(
 
         }) {
             Icon(Icons.Default.PlayArrow, contentDescription = "Play")
-        }
+        }/*
         Button(onClick = {
             onEvent(SessionEvent.Edit(row))
         }) {
             Icon(Icons.Default.Create, contentDescription = "Edit")
-        }
+        }*/
         Button(onClick = {
             onEvent(SessionEvent.Delete(row))
         }) {
@@ -261,14 +260,13 @@ fun NewSessionRowScreen(
     range_only: Boolean = true,
     state: SessionsState,
     onNavClick: (Int, Int, Int, Int) -> Unit,) {
-    Row(modifier = Modifier
-        .fillMaxHeight()
-        .fillMaxWidth()) {
-        Column(modifier = Modifier
-            .fillMaxHeight()
-            .width(150.dp)) {
-            Row {
-                Spacer(Modifier.width(10.dp))
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .fillMaxHeight()) {
+        Row(modifier = Modifier
+            .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically) {
+            Spacer(Modifier.width(10.dp))
             OutlinedTextField(
                 value = newRow.date,
                 onValueChange = {
@@ -276,18 +274,17 @@ fun NewSessionRowScreen(
                 },
                 label = { Text("Date") },
                 modifier = Modifier
-                    .width(130.dp))
+                    .width(130.dp),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    textColor = Color.DarkGray
+                ))
+            Spacer(Modifier.weight(1f))
+            Button(onClick = {
+                onEvent(SessionEvent.Dismiss)
+            }) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "Dismiss")
             }
-            Row {
-                Spacer(Modifier.width(10.dp))
-                Button(onClick = {
-                    onEvent(SessionEvent.Dismiss)
-                }) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Dismiss")
-                }
-            }
-        }
-        Column(modifier = Modifier.fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
+            Spacer(Modifier.weight(1f))
             if(range_only) {
                 CourseItemRange(state, newRow, existingSessions, onEvent, newRow.date, onNavClick)
             } else {
@@ -296,8 +293,9 @@ fun NewSessionRowScreen(
                 }, ) {
                     Text("Add New Course")
                 }
-                AvailableCourses(state.allCourses, existingSessions, onEvent, newRow)
             }
+            Spacer(Modifier.width(10.dp))
         }
+        if(!range_only) AvailableCourses(state.allCourses, existingSessions, onEvent, newRow)
     }
 }

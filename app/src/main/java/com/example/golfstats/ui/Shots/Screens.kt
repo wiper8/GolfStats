@@ -37,6 +37,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
@@ -216,6 +217,15 @@ fun ChoixBatonScreen(state: State<ShotState>, onEvent: (ShotEvent) -> Unit,
                         }
                     }
                 }
+                Spacer(Modifier.height(20.dp))
+                Row {
+                    Button(onClick = {
+                        onEvent(ShotEvent.DismissShotAvailableEdit)
+                    },
+                        Modifier.height(53.dp).width(80.dp)) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Return")
+                    }
+                }
             } else {
                 LazyVerticalGrid(columns = GridCells.Fixed(3),
                     verticalArrangement = Arrangement.Center) {
@@ -235,27 +245,32 @@ fun ChoixBatonScreen(state: State<ShotState>, onEvent: (ShotEvent) -> Unit,
                 }
                 Spacer(Modifier.height(20.dp))
                 Row {
+                    Spacer(Modifier.weight(1f))
                     Button(onClick = {
                         onEvent(ShotEvent.DismissShot)
                     }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Return")
                     }
+                    Spacer(Modifier.weight(1f))
                     Button(onClick = {
                         onEvent(ShotEvent.SETDEFAULT)
                     }) {
                         Text("Set Default", fontSize=20.sp)
                         Icon(Icons.Default.Refresh, contentDescription = "Set Default")
                     }
+                    Spacer(Modifier.weight(1f))
                     Button(onClick = {
                         onEvent(ShotEvent.OnEditShotAvailable)
                     }) {
                         Icon(Icons.Default.Edit, contentDescription = "Edit")
                     }
+                    Spacer(Modifier.weight(1f))
                     Button(onClick = {
                         onEvent(ShotEvent.OnAddNewShotAvailable)
                     }) {
                         Icon(Icons.Default.Add, contentDescription = "Add")
                     }
+                    Spacer(Modifier.weight(1f))
                 }
             }
 
@@ -311,9 +326,11 @@ fun NewShotAvailable(
         Column {
             if(state.value.is_delete_option) {
                 Button(onClick = {
-                    //TODO mettre rouge
                     onEvent(ShotEvent.DeleteShotAvailable(newShotAvailable))
-                }) {
+                },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Red
+                    )) {
                     Text("Delete")
                 }
             }
@@ -324,7 +341,10 @@ fun NewShotAvailable(
                 },
                 label = {Text("Shot")},
                 modifier = Modifier
-                    .width(150.dp)
+                    .width(150.dp),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    textColor = Color.DarkGray
+                )
             )
             Row {
                 OutlinedTextField(
@@ -334,31 +354,34 @@ fun NewShotAvailable(
                     },
                     label = {Text("ID")},
                     modifier = Modifier
-                        .width(150.dp)
+                        .width(150.dp),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        textColor = Color.DarkGray
+                    )
                 )
             }
             Row {
-                Text(text="Can it be off the green and a success?")
+                Text(text="Can it be on the green?")
             }
             Row {
                 if(newShotAvailable.green) {
-                    FilledTonalButton(onClick = {
+                    Button(onClick = {
                         onEvent(ShotEvent.ClickButtonGreen(false))
                     }) {
                         Icon(Icons.Default.Close, "No")
                     }
-                    Button(onClick = {
+                    FilledTonalButton(onClick = {
                         onEvent(ShotEvent.ClickButtonGreen(true))
                     }) {
                         Icon(Icons.Default.Done, "Yes")
                     }
                 } else {
-                    Button(onClick = {
+                    FilledTonalButton(onClick = {
                         onEvent(ShotEvent.ClickButtonGreen(false))
                     }) {
                         Icon(Icons.Default.Close, "No")
                     }
-                    FilledTonalButton(onClick = {
+                    Button(onClick = {
                         onEvent(ShotEvent.ClickButtonGreen(true))
                     }) {
                         Icon(Icons.Default.Done, "Yes")
@@ -371,23 +394,23 @@ fun NewShotAvailable(
             }
             Row {
                 if(newShotAvailable.penalty) {
-                    FilledTonalButton(onClick = {
+                    Button(onClick = {
                         onEvent(ShotEvent.ClickButtonPenalty(false))
                     }) {
                         Icon(Icons.Default.Close, "No")
                     }
-                    Button(onClick = {
+                    FilledTonalButton(onClick = {
                         onEvent(ShotEvent.ClickButtonPenalty(true))
                     }) {
                         Icon(Icons.Default.Done, "Yes")
                     }
                 } else {
-                    Button(onClick = {
+                    FilledTonalButton(onClick = {
                         onEvent(ShotEvent.ClickButtonPenalty(false))
                     }) {
                         Icon(Icons.Default.Close, "No")
                     }
-                    FilledTonalButton(onClick = {
+                    Button(onClick = {
                         onEvent(ShotEvent.ClickButtonPenalty(true))
                     }) {
                         Icon(Icons.Default.Done, "Yes")
@@ -399,23 +422,23 @@ fun NewShotAvailable(
             }
             Row {
                 if(newShotAvailable.reset) {
-                    FilledTonalButton(onClick = {
+                    Button(onClick = {
                         onEvent(ShotEvent.ClickButtonReset(false))
                     }) {
                         Icon(Icons.Default.Close, "No")
                     }
-                    Button(onClick = {
+                    FilledTonalButton(onClick = {
                         onEvent(ShotEvent.ClickButtonReset(true))
                     }) {
                         Icon(Icons.Default.Done, "Yes")
                     }
                 } else {
-                    Button(onClick = {
+                    FilledTonalButton(onClick = {
                         onEvent(ShotEvent.ClickButtonReset(false))
                     }) {
                         Icon(Icons.Default.Close, "No")
                     }
-                    FilledTonalButton(onClick = {
+                    Button(onClick = {
                         onEvent(ShotEvent.ClickButtonReset(true))
                     }) {
                         Icon(Icons.Default.Done, "Yes")

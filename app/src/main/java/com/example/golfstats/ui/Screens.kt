@@ -148,7 +148,10 @@ fun NewCourseScreen(navController: NavHostController) {
                     nom_terrain = text
                 },
                 modifier = Modifier
-                        .width(180.dp))
+                        .width(180.dp),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    textColor = Color.DarkGray
+                ))
             Button(onClick = {
                 n_trous = 9
             }) {

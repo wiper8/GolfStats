@@ -22,6 +22,7 @@ sealed interface ShotEvent {
     object SaveShotAvailable: ShotEvent
     object OnAddNewShotAvailable: ShotEvent
     data class DeleteShotAvailable(val shotavailable: ShotsAvailableRow): ShotEvent
+    object DismissShotAvailableEdit: ShotEvent
     data class SetSessionId(val session_id: Int): ShotEvent
     data class ClickButtonGreen(val bool: Boolean): ShotEvent
     data class ClickButtonPenalty(val bool: Boolean): ShotEvent

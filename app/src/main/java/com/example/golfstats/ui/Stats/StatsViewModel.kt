@@ -241,6 +241,22 @@ class StatsViewModel(val shotsRepo: ShotsRepo, val shotsavailableRepo: ShotsAvai
                                                     }
                                                 }
                                             }
+                                            for (shotavailable in _state.value.shotsAvailableList) {
+                                                if(shotavailable.shot == shot.shot) {
+                                                    if (!shotavailable.penalty) {
+                                                        penalty[i] = 0
+                                                        penaltyTry[i] = 0
+                                                    }
+                                                    if (!shotavailable.green) {
+                                                        green[i] = 0
+                                                        greenTry[i] = 0
+                                                    }
+                                                    if (!shotavailable.reset) {
+                                                        reset[i] = 0
+                                                        resetTry[i] = 0
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }

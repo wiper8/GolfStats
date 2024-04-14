@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            GolfStatsTheme {
+            GolfStatsTheme(darkTheme = true, dynamicColor = true) { // mettre dinyamicColor à faux si on veut customise plus facileent dans theme.kt
                 GolfApp()
             }
         }

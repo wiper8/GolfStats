@@ -50,6 +50,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.semantics.semantics
@@ -128,11 +129,15 @@ fun CourseItem(
         }
 
         //TODO ajouter le bouton pour modifier un parcours ainsi que les ajustements dans les BD
-        //Button(onClick = {
-        //    onEvent(SessionEvent.EditCourse(row))
-        //}) {
-        //    Icon(Icons.Default.Create, contentDescription = "Edit")
-        //}
+
+        /*
+        Button(onClick = {
+            onEvent(SessionEvent.EditCourse(row))
+        }, modifier = Modifier
+                .width(75.dp)
+            .height(60.dp)) {
+            Text("Copy", fontSize = 20.sp)
+        }*/
         Button(onClick = {
             onEvent(SessionEvent.DeleteCourse(row))
         }, modifier = Modifier
@@ -152,8 +157,10 @@ fun CourseItemRange(
         onNavClick(state.session_id, -1, 0, -1)
     }
     Row(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
     ) {
+        Spacer(Modifier.weight(1f))
         Text(
             text = "Range",
             style = MaterialTheme.typography.titleLarge,
@@ -168,7 +175,6 @@ fun CourseItemRange(
         if(session_date != "" && ok) {
             Button(
                 onClick = {
-                    onEvent(SessionEvent.PlayCourse(-1)) //TODO remove?
                     onEvent(SessionEvent.SaveSessionRange)
                 },
                 modifier = Modifier
@@ -185,13 +191,6 @@ fun CourseItemRange(
                 Icon(Icons.Default.PlayArrow, contentDescription = "Play")
             }
         }
-
-        FilledTonalButton(onClick = {},
-            modifier = Modifier
-                .width(75.dp)
-                .height(60.dp)) {
-            Icon(Icons.Default.Delete, contentDescription = "Delete")
-        }
     }
 }
 
@@ -200,6 +199,7 @@ fun CourseItemRange(
 @Composable
 fun NewCourseRowScreen(
     holes_list: List<HoleRow>,
+    allCourses: List<CourseRow>,
     newRow: CourseRow,
     onEvent: (SessionEvent) -> Unit
 ) {
@@ -220,7 +220,10 @@ fun NewCourseRowScreen(
                 label = { Text("Nom")},
                 modifier = Modifier
                     .width(110.dp)
-                    .height(80.dp)
+                    .height(80.dp),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    textColor = Color.DarkGray
+                )
             )
             Button(onClick = {
                 onEvent(SessionEvent.OnChangeNumHoles(9))
@@ -251,7 +254,7 @@ fun NewCourseRowScreen(
                 Icon(Icons.Default.Close, "Dismiss", Modifier.size(60.dp))
             }
 
-            if(newRow.nom != "") {
+            if(newRow.nom != "" && allCourses.filter{ it.nom == newRow.nom}.none()) {
                 Button(
                     onClick = {onEvent(SessionEvent.SaveCourse)},
                     modifier = Modifier
@@ -289,7 +292,10 @@ fun NewCourseRowScreen(
                                 label = { Text("Par", fontSize = 10.sp) },
                                 modifier = Modifier
                                     .width(50.dp)
-                                    .height(70.dp)
+                                    .height(70.dp),
+                                colors = TextFieldDefaults.outlinedTextFieldColors(
+                                    textColor = Color.DarkGray
+                                )
                             )
                             OutlinedTextField(
                                 value = check_int(holes_list.get(it-1).yards),
@@ -300,7 +306,10 @@ fun NewCourseRowScreen(
                                 label = { Text("Yards", fontSize = 10.sp) },
                                 modifier = Modifier
                                     .width(65.dp)
-                                    .height(70.dp)
+                                    .height(70.dp),
+                                colors = TextFieldDefaults.outlinedTextFieldColors(
+                                    textColor = Color.DarkGray
+                                )
                             )
                             Spacer(modifier = Modifier.width(5.dp))
                         }

@@ -137,6 +137,18 @@ class ShotViewModel(val shotsRepo: ShotsRepo, val shotavailableRepo: ShotsAvaila
                 newShotAvailable = ShotsAvailableRow()
                 error_gen = false
             }
+            ShotEvent.DismissShotAvailableEdit -> {
+                _state.update {
+                    it.copy(
+                        is_add_shot_screen_open = false,
+                        is_delete_option = false,
+                        is_choix_club_open = true,
+                        is_edit_choix_club_open = false,
+                        is_set_default_open = false,
+                        is_confirm_open = false
+                    )
+                }
+            }
             is ShotEvent.DeleteShotAvailable -> {
                 viewModelScope.launch {
                     shotavailableRepo.delete(event.shotavailable)
