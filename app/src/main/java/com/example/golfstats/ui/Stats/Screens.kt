@@ -3,8 +3,11 @@ package com.example.golfstats.ui.Stats
 import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -13,54 +16,81 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.golfstats.Screens
-import com.example.golfstats.ui.AppViewModelProvider
-import com.example.golfstats.ui.Sessions.StatsViewModel
-import com.example.golfstats.ui.Shots.ShotEvent
-import com.example.golfstats.ui.Shots.ShotViewModel
 
 @Composable
-fun StatsScreen(session_id: Int, navController: NavHostController) {
-    val viewModel: StatsViewModel = viewModel(factory = AppViewModelProvider.Factory)
-    val state = viewModel.state.collectAsState()
-    val onEvent = viewModel::onEvent
+fun StatsScreen(state: State<StatsState>, onEvent: (StatEvent) -> Unit, navController: NavHostController) {
 
-    onEvent(StatEvent.SetSessionId(session_id))
-    onEvent(StatEvent.GetUniqueShotName(session_id))
-    Log.d("EEEEE", "A")
-    onEvent(StatEvent.GetStatSuccess(session_id))
-    Log.d("EEEEE", "success" + state.value.success.toString())
-    Log.d("EEEEE", "B")
-    onEvent(StatEvent.GetStatSuccessTry(session_id))
-    //onEvent(StatEvent.GetStatPutt(session_id))
+    onEvent(StatEvent.GetStats)
 
-    Column {
+    Column(
+        Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Row {
-            Text("Shot")
-            Text("Success")
-            Text("Green")
-            Text("Penalty")
-            Text("Reset")
-        }
-        LazyColumn() {
-            itemsIndexed(state.value.uniqueshotsname) {index, item ->
-                Log.d("EEEEE", "inside lazy with item " + index.toString())
-                Log.d("EEEEE", state.value.uniqueshotsname.toString())
-                Log.d("EEEEE", state.value.success.toString())
-                StatItem(state.value.uniqueshotsname[index],
-                    state.value.success[index], 0,
-                    0,0,0,0,0,0)
-                    //state.value.green[index], state.value.greenTry[index],
-                    //state.value.penalty[index], state.value.penaltyTry[index],
-                    //state.value.reset[index], state.value.resetTry[index])
+            Column {
+                Text(
+                    "Shot" + " ".repeat(maxOf(state.value.longest_shot_name - 4, 0)),
+                    fontSize = 20.sp
+                )
+                LazyColumn() {
+                    itemsIndexed(state.value.uniqueshotsname) { index, item ->
+                        if (item != "Putt") {
+                            Text(
+                                state.value.uniqueshotsname[index] +
+                                        " ".repeat(maxOf(state.value.longest_shot_name - 3, 1)),
+                                fontSize = 20.sp
+                            )
+                        }
+                    }
+                }
+            }
+
+            Column {
+                Row {
+                    Text(" Success ", fontSize = 20.sp)
+                    Text("Green  ", fontSize = 20.sp)
+                    Text("Penalty ", fontSize = 20.sp)
+                    Text("Reset", fontSize = 20.sp)
+                }
+
+                LazyColumn() {
+                    itemsIndexed(state.value.uniqueshotsname) { index, item ->
+                        if (item != "Putt") {
+                            StatItem(
+                                state.value.uniqueshotsname[index],
+                                state.value.success[index],
+                                state.value.successTry[index],
+                                state.value.green[index],
+                                state.value.greenTry[index],
+                                state.value.penalty[index],
+                                state.value.penaltyTry[index],
+                                state.value.reset[index],
+                                state.value.resetTry[index],
+                                state.value.longest_shot_name
+                            )
+                        }
+                    }
+                }
             }
         }
-        PuttStat(one = 0, two = 0, three = 0, four = 0, five = 0)
+        if (state.value.putts[0] != 0 || state.value.putts[1] != 0 || state.value.putts[2] != 0 || state.value.putts[3] != 0 || state.value.putts[4] != 0) {
+            PuttStat(
+                one = state.value.putts[0],
+                two = state.value.putts[1],
+                three = state.value.putts[2],
+                four = state.value.putts[3],
+                five = state.value.putts[4]
+            )
+        }
+        Spacer(Modifier.height(40.dp))
         Button(onClick = {
-            navController.popBackStack(route = Screens.Stats.name, inclusive = false)
+            navController.popBackStack(route = Screens.Sessions.name, inclusive = false)
         }) {
             Icon(Icons.Default.ArrowBack, "return")
         }
@@ -69,30 +99,41 @@ fun StatsScreen(session_id: Int, navController: NavHostController) {
 
 @Composable
 fun StatItem(shot: String, success: Int, successTry: Int, green: Int, greenTry: Int,
-             penalty: Int, penaltyTry: Int, reset: Int, resetTry: Int) {
-    Row {
-        Text(shot)
-        Text("${success.toString()} / ${successTry.toString()}")
-
-    }
+             penalty: Int, penaltyTry: Int, reset: Int, resetTry: Int, longest: Int) {
+    Text("    ${success.toString()} / ${successTry.toString()}     ${green.toString()} / " +
+            "${greenTry.toString()}   ${penalty.toString()} / ${penaltyTry.toString()}    ${reset.toString()} / ${resetTry.toString()}",
+        fontSize = 20.sp)
 }
 
 @Composable
 fun PuttStat(one: Int, two: Int, three: Int, four: Int, five: Int) {
     Column {
+        Text("Putt", fontSize = 20.sp)
         Row {
-            Text("1")
-            Text("2")
-            Text("3")
-            Text("4")
-            Text("5")
-        }
-        Row {
-            Text("${one.toString()}")
-            Text("${two.toString()}")
-            Text("${three.toString()}")
-            Text("${four.toString()}")
-            Text("${five.toString()}")
+            Column {
+                Text("1", fontSize = 20.sp)
+                Text("${one.toString()} ", fontSize = 20.sp)
+            }
+            Spacer(Modifier.width(10.dp))
+            Column {
+                Text("2", fontSize = 20.sp)
+                Text("${two.toString()} ", fontSize = 20.sp)
+            }
+            Spacer(Modifier.width(10.dp))
+            Column {
+                Text("3", fontSize = 20.sp)
+                Text("${three.toString()} ", fontSize = 20.sp)
+            }
+            Spacer(Modifier.width(10.dp))
+            Column {
+                Text("4", fontSize = 20.sp)
+                Text("${four.toString()} ", fontSize = 20.sp)
+            }
+            Spacer(Modifier.width(10.dp))
+            Column {
+                Text("5", fontSize = 20.sp)
+                Text("${five.toString()} ", fontSize = 20.sp)
+            }
         }
     }
 }

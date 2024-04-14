@@ -21,6 +21,10 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.golfstats.GolfStatsApplication
+import com.example.golfstats.data.Recommendations.RecommendationsRepo
+import com.example.golfstats.data.ShotsAvailable.ShotsAvailableRepo
+import com.example.golfstats.ui.Databases.DatabasesViewModel
+import com.example.golfstats.ui.Recommendations.RecommendationsViewModel
 import com.example.golfstats.ui.Shots.ShotViewModel
 import com.example.golfstats.ui.Sessions.SessionsViewModel
 import com.example.golfstats.ui.Sessions.StatsViewModel
@@ -35,28 +39,35 @@ object AppViewModelProvider {
             YardageViewModel(golfstatsApplication().container.yardagesRepo)
         }
         initializer {
-            SessionsViewModel(golfstatsApplication().container.sessionsRepo)
+            SessionsViewModel(golfstatsApplication().container.sessionsRepo,
+                golfstatsApplication().container.shotsRepo,
+                golfstatsApplication().container.courseRepo,
+                golfstatsApplication().container.holesRepo)
         }
         initializer {
             ShotViewModel(golfstatsApplication().container.shotsRepo,
-                golfstatsApplication().container.shotsavailableRepo)
+                golfstatsApplication().container.shotsavailableRepo,
+                golfstatsApplication().container.sessionsRepo,
+                golfstatsApplication().container.recommendationsRepo)
         }
         initializer {
-            StatsViewModel(golfstatsApplication().container.shotsRepo)
-        }
-        /*initializer {
-            CourseViewModel(golfstatsApplication().container.courseRepo)
-        }*/
-        /*initializer {
-            SessionsEntryViewModel(golfstatsApplication().container.sessionsRepo)
-        }
-
-        initializer {
-            CourseViewModel(golfstatsApplication().container.courseRepo)
+            StatsViewModel(golfstatsApplication().container.shotsRepo, golfstatsApplication().container.shotsavailableRepo)
         }
         initializer {
-            CourseEntryViewModel(golfstatsApplication().container.courseRepo)
-        }*/
+            DatabasesViewModel(
+                golfstatsApplication().container.courseRepo,
+                golfstatsApplication().container.holesRepo,
+                golfstatsApplication().container.shotsRepo,
+                golfstatsApplication().container.sessionsRepo
+            )
+        }
+        initializer {
+            RecommendationsViewModel(
+                golfstatsApplication().container.holesRepo,
+                golfstatsApplication().container.shotsavailableRepo,
+                golfstatsApplication().container.recommendationsRepo
+            )
+        }
     }
 }
 

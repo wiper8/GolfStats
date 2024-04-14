@@ -1,17 +1,16 @@
 package com.example.golfstats.ui.Shots
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.golfstats.data.Sessions.SessionRow
+import com.example.golfstats.data.Recommendations.RecommendationsRepo
+import com.example.golfstats.data.Sessions.SessionsRepo
 import com.example.golfstats.data.Shots.ShotRow
 import com.example.golfstats.data.ShotsAvailable.ShotsAvailableRepo
 import com.example.golfstats.data.Shots.ShotsRepo
 import com.example.golfstats.data.ShotsAvailable.ShotsAvailableRow
-import com.example.golfstats.ui.Sessions.SessionEvent
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -22,7 +21,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 
-class ShotViewModel(val shotsRepo: ShotsRepo, val shotavailableRepo: ShotsAvailableRepo) : ViewModel() {
+class ShotViewModel(val shotsRepo: ShotsRepo, val shotavailableRepo: ShotsAvailableRepo,
+                    val sessionsRepo: SessionsRepo, val recommendationsRepo: RecommendationsRepo) : ViewModel() {
 
     private val _state = MutableStateFlow(ShotState())
 
@@ -30,10 +30,14 @@ class ShotViewModel(val shotsRepo: ShotsRepo, val shotavailableRepo: ShotsAvaila
         _state,
         shotsRepo.getShots(),
         shotavailableRepo.getShots(),
-    ) { state, shotList, shotavailableList ->
+        sessionsRepo.getSessions(),
+        recommendationsRepo.getRecommendations()
+        ) { state, shotList, shotavailableList, sessions_list, recomm_list ->
         state.copy(
             recentShotsList = shotList,
-            shotavailableList = shotavailableList
+            shotavailableList = shotavailableList,
+            sessions_list = sessions_list,
+            recomm_list = recomm_list
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), ShotState())
 
@@ -120,7 +124,6 @@ class ShotViewModel(val shotsRepo: ShotsRepo, val shotavailableRepo: ShotsAvaila
                             "Driver", 13, true, true, true, false
                         )
                     )
-                    delay(300L)
                 }
             }
             ShotEvent.onAddShot -> {
@@ -134,10 +137,21 @@ class ShotViewModel(val shotsRepo: ShotsRepo, val shotavailableRepo: ShotsAvaila
                 newShotAvailable = ShotsAvailableRow()
                 error_gen = false
             }
+            ShotEvent.DismissShotAvailableEdit -> {
+                _state.update {
+                    it.copy(
+                        is_add_shot_screen_open = false,
+                        is_delete_option = false,
+                        is_choix_club_open = true,
+                        is_edit_choix_club_open = false,
+                        is_set_default_open = false,
+                        is_confirm_open = false
+                    )
+                }
+            }
             is ShotEvent.DeleteShotAvailable -> {
                 viewModelScope.launch {
                     shotavailableRepo.delete(event.shotavailable)
-                    delay(300L) // Animation delay
                 }
                 viewModelScope.launch {
                     _state.update {
@@ -154,7 +168,6 @@ class ShotViewModel(val shotsRepo: ShotsRepo, val shotavailableRepo: ShotsAvaila
                             is_delete_option = false
                         )
                     }
-                    delay(300)
                     newShot = ShotRow(session_id = _state.value.session_id)
                     newShotAvailable = ShotsAvailableRow()
                     error_gen = false
@@ -177,7 +190,6 @@ class ShotViewModel(val shotsRepo: ShotsRepo, val shotavailableRepo: ShotsAvaila
                             is_putt_open = false
                         )
                     }
-                    delay(300)
                     newShot = ShotRow(session_id = _state.value.session_id)
                     newShotAvailable = ShotsAvailableRow()
                     error_gen = false
@@ -200,7 +212,6 @@ class ShotViewModel(val shotsRepo: ShotsRepo, val shotavailableRepo: ShotsAvaila
                             is_putt_open = false
                         )
                     }
-                    delay(300)
                     newShot = ShotRow(session_id = _state.value.session_id)
                     newShotAvailable = ShotsAvailableRow()
                     error_gen = false
@@ -227,7 +238,6 @@ class ShotViewModel(val shotsRepo: ShotsRepo, val shotavailableRepo: ShotsAvaila
                     if(validateShotAvailable(row)) {
                         viewModelScope.launch {
                             shotavailableRepo.upsert(row)
-                            delay(300L)
                         }
                         _state.update {
                             it.copy(
@@ -278,7 +288,6 @@ class ShotViewModel(val shotsRepo: ShotsRepo, val shotavailableRepo: ShotsAvaila
                     )
                 }
             }
-
             is ShotEvent.OnChooseShot -> {
                 newShot = newShot.copy(
                     shot = event.shot
@@ -305,9 +314,36 @@ class ShotViewModel(val shotsRepo: ShotsRepo, val shotavailableRepo: ShotsAvaila
                 }
             }
             is ShotEvent.SetSessionId -> {
+                viewModelScope.launch {
+                    shotsRepo.getSessionShots(event.session_id).collect { l ->
+                        _state.update {
+                            it.copy(
+                                session_id = event.session_id,
+                                recentShotsList = l
+                            )
+                        }
+                    }
+                }
+            }
+            is ShotEvent.SetHoleNum -> {
                 _state.update {
                     it.copy(
-                        session_id = event.session_id
+                        hole_num = event.hole_num
+                    )
+                }
+
+            }
+            is ShotEvent.SetCourseId -> {
+                _state.update {
+                    it.copy(
+                        course_id = event.id
+                    )
+                }
+            }
+            is ShotEvent.SetHoleId -> {
+                _state.update {
+                    it.copy(
+                        hole_id = event.id
                     )
                 }
             }
@@ -395,10 +431,14 @@ class ShotViewModel(val shotsRepo: ShotsRepo, val shotavailableRepo: ShotsAvaila
                 onEvent(ShotEvent.SaveCurrentShot)
             }
             ShotEvent.SaveCurrentShot -> {
+                if(state.value.hole_num > 0) {
+                    newShot = newShot.copy(
+                        num_hole = state.value.hole_num
+                    )
+                }
                 newShot?.let {row ->
                     viewModelScope.launch {
                         shotsRepo.upsert(row)
-                        delay(300L)
                     }
                     onEvent(ShotEvent.DismissShot)
                 }
@@ -407,7 +447,6 @@ class ShotViewModel(val shotsRepo: ShotsRepo, val shotavailableRepo: ShotsAvaila
             is ShotEvent.DeleteRecordedShot -> {
                 viewModelScope.launch {
                     shotsRepo.delete(event.shot)
-                    delay(300L) // Animation delay
                 }
             }
         }

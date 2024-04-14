@@ -7,11 +7,12 @@ import androidx.room.PrimaryKey
 data class HoleRow(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    val numero: Int = 1,
-    val yards: Int = 0,
-    val par: Int = 4,
-    val mypar: Int = 5,
-    val myhandicap: Int = 9,
+    val course_id: Int = 0,
+    val numero: Int = 0,
+    var yards: Int = 0,
+    var par: Int = 0,
+    val mypar: Int = 0,
+    val myhandicap: Int = 0,
     val plan: String = "",
     val plan_safe: String = "",
     val plan_me: String = ""

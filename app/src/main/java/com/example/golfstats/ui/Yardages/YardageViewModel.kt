@@ -38,6 +38,61 @@ class YardageViewModel(val yardagesRepo: YardagesRepo) : ViewModel() {
 
     fun onEvent(event: YardageEvent) {
         when(event) {
+            YardageEvent.SETDEFAULT -> {
+                viewModelScope.launch {
+                    yardagesRepo.upsert(
+                        YardageRow(
+                            "Driver", 190, 220
+                        )
+                    )
+                    yardagesRepo.upsert(
+                        YardageRow(
+                            "Fer 4", 165, 180
+                        )
+                    )
+                    yardagesRepo.upsert(
+                        YardageRow(
+                            "Fer 5", 160, 170
+                        )
+                    )
+                    yardagesRepo.upsert(
+                        YardageRow(
+                            "Fer 6", 150, 160
+                        )
+                    )
+                    yardagesRepo.upsert(
+                        YardageRow(
+                            "Fer 7", 140, 150
+                        )
+                    )
+                    yardagesRepo.upsert(
+                        YardageRow(
+                            "Fer 8", 130, 140
+                        )
+                    )
+                    yardagesRepo.upsert(
+                        YardageRow(
+                            "Fer 9", 115, 125
+                        )
+                    )
+                    yardagesRepo.upsert(
+                        YardageRow(
+                            "PW", 100, 110
+                        )
+                    )
+                    yardagesRepo.upsert(
+                        YardageRow(
+                            "GW", 90, 100
+                        )
+                    )
+                    yardagesRepo.upsert(
+                        YardageRow(
+                            "SW", 70, 85
+                        )
+                    )
+
+                }
+            }
             is YardageEvent.Delete -> {
                 viewModelScope.launch {
                     _state.update {

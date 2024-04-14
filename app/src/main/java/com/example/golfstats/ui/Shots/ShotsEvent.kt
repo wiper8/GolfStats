@@ -22,10 +22,14 @@ sealed interface ShotEvent {
     object SaveShotAvailable: ShotEvent
     object OnAddNewShotAvailable: ShotEvent
     data class DeleteShotAvailable(val shotavailable: ShotsAvailableRow): ShotEvent
+    object DismissShotAvailableEdit: ShotEvent
     data class SetSessionId(val session_id: Int): ShotEvent
     data class ClickButtonGreen(val bool: Boolean): ShotEvent
     data class ClickButtonPenalty(val bool: Boolean): ShotEvent
     data class ClickButtonReset(val bool: Boolean): ShotEvent
     object NewAvailableShotIsPutt: ShotEvent
     data class DeleteRecordedShot(val shot: ShotRow): ShotEvent
+    data class SetHoleNum(val hole_num: Int): ShotEvent
+    data class SetCourseId(val id: Int?): ShotEvent
+    data class SetHoleId(val id: Int?): ShotEvent
 }

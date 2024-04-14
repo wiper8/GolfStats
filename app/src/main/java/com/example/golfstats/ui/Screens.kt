@@ -2,90 +2,108 @@
 
 package com.example.golfstats.ui
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.TextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.golfstats.Screens
-import com.example.golfstats.data.Sessions.SessionRow
-import com.example.golfstats.data.Yardages.YardageRow
-import com.example.golfstats.ui.Course.CourseEvent
-import com.example.golfstats.ui.Sessions.SessionEvent
-import com.example.golfstats.ui.Yardages.YardageEvent
-import kotlinx.coroutines.launch
-import org.w3c.dom.Text
 
 @Composable
-fun MenuScreen(navController: NavHostController) {
+fun MenuScreen(navController: NavHostController, modifier: Modifier = Modifier
+    .width(260.dp)
+    .height(160.dp)) {
 
     Column(
+        Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(Modifier.height(13.dp))
         Button(onClick = {
             navController.navigate("yardages_graph")
-        }) {
-            Text(text = "Yardages")
+        },
+            modifier = modifier) {
+            Text(text = "Yardages", fontSize = 36.sp)
         }
-        /*Button(onClick = {
+        Spacer(Modifier.height(27.dp))
+        Button(onClick = {
             navController.navigate("course_graph")
-        }) {
-            Text(text="Scorecard+")
-        }*/
+        },
+            modifier = modifier) {
+            Text(text="Scorecard+", fontSize = 36.sp)
+        }
+        Spacer(Modifier.height(27.dp))
         Button(onClick = {
             navController.navigate("range_graph")
-        }) {
-            Text(text="Range Tracker")
+        },
+            modifier = modifier) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(text="Range", fontSize = 36.sp)
+                Spacer(Modifier.height(10.dp))
+                Text(text="Tracker", fontSize = 36.sp)
+            }
         }
+        Spacer(Modifier.height(27.dp))
         Button(onClick = {
             navController.navigate("stats_graph")
-        }) {
-            Text(text="Stats")
+        },
+            modifier = modifier) {
+            Text(text="Stats", fontSize = 36.sp)
         }
+        Spacer(Modifier.height(13.dp))
+        Button(onClick = {
+            navController.navigate("databases_graph")
+        },
+            modifier = Modifier.height(80.dp).width(150.dp)) {
+            Text(text="Databases", fontSize = 20.sp)
+        }
+        Spacer(Modifier.height(13.dp))
     }
 }
 
 @Composable
 fun ButtonEditDel(
     deleteEvent: () -> Unit,
-    saveEvent: () -> Unit
+    saveEvent: () -> Unit,
+    saveCondition: Boolean
 ) {
     Row {
         Button(onClick = deleteEvent) {
             Icon(Icons.Default.Close, contentDescription = "Cancel")
         }
-        Button(
-            onClick = saveEvent
-        ) {
-            Icon(Icons.Default.Done, contentDescription = "Save")
+        if(saveCondition) {
+            Button(
+                onClick = saveEvent
+            ) {
+                Icon(Icons.Default.Done, contentDescription = "Save")
+            }
+        } else {
+            FilledTonalButton(onClick = {}) {
+                Icon(Icons.Default.Done, contentDescription = "Save")
+            }
         }
     }
 }
+
 
 //TODO
 /*@Composable
@@ -130,7 +148,10 @@ fun NewCourseScreen(navController: NavHostController) {
                     nom_terrain = text
                 },
                 modifier = Modifier
-                        .width(150.dp))
+                        .width(180.dp),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    textColor = Color.DarkGray
+                ))
             Button(onClick = {
                 n_trous = 9
             }) {

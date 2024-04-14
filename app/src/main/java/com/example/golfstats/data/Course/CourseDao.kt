@@ -21,6 +21,6 @@ interface CourseDao {
     @Query("SELECT * from courses WHERE id = :id")
     fun getItem(id: Int): Flow<CourseRow>
 
-    @Query("SELECT * from courses WHERE nom = :nom")
+    @Query("SELECT * from courses WHERE nom = :nom LIMIT 1")
     fun getCoursefromNom(nom: String): Flow<CourseRow>
 }

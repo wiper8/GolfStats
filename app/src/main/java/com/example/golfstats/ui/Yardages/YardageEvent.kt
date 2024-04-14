@@ -11,4 +11,5 @@ sealed interface YardageEvent {
     object Save: YardageEvent
     data class Edit(val row: YardageRow): YardageEvent
     data class Delete(val row: YardageRow): YardageEvent
+    object SETDEFAULT: YardageEvent
 }
