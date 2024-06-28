@@ -136,26 +136,42 @@ class StatsViewModel(val shotsRepo: ShotsRepo, val shotsavailableRepo: ShotsAvai
                                                 if (shot.success == 2) {
                                                     success[i]++
                                                     successTry[i]++
+                                                    if (shot.green == 2) {
+                                                        green[i]++
+                                                        greenTry[i]++
+                                                    } else if (shot.green == 0) {
+                                                        greenTry[i]++
+                                                    }
                                                 } else if (shot.success == 0) {
                                                     successTry[i]++
+                                                    if (shot.penalty == 2) {
+                                                        penalty[i]++
+                                                        penaltyTry[i]++
+                                                    } else if (shot.penalty == 0) {
+                                                        penaltyTry[i]++
+                                                        if (shot.reset == 2) {
+                                                            reset[i]++
+                                                            resetTry[i]++
+                                                        } else if (shot.reset == 0) {
+                                                            resetTry[i]++
+                                                        }
+                                                    }
                                                 }
-                                                if (shot.green == 2) {
-                                                    green[i]++
-                                                    greenTry[i]++
-                                                } else if (shot.green == 0) {
-                                                    greenTry[i]++
-                                                }
-                                                if (shot.penalty == 2) {
-                                                    penalty[i]++
-                                                    penaltyTry[i]++
-                                                } else if (shot.penalty == 0) {
-                                                    penaltyTry[i]++
-                                                }
-                                                if (shot.reset == 2) {
-                                                    reset[i]++
-                                                    resetTry[i]++
-                                                } else if (shot.reset == 0) {
-                                                    resetTry[i]++
+                                            }
+                                            for (shotavailable in _state.value.shotsAvailableList) {
+                                                if(shotavailable.shot == shot.shot) {
+                                                    if (!shotavailable.penalty) {
+                                                        penalty[i] = 0
+                                                        penaltyTry[i] = 0
+                                                    }
+                                                    if (!shotavailable.green) {
+                                                        green[i] = 0
+                                                        greenTry[i] = 0
+                                                    }
+                                                    if (!shotavailable.reset) {
+                                                        reset[i] = 0
+                                                        resetTry[i] = 0
+                                                    }
                                                 }
                                             }
                                         }
